@@ -40,9 +40,16 @@
 <div><h3>COP<br><small>Center of Pressure · 압력중심</small></h3><canvas id="copCanvas" height="240" role="img" aria-label="발바닥 위 압력중심 경로"></canvas><p id="copValue"></p><small>앞뒤 위치는 발꿈치 0%에서 발끝 100%까지 표시합니다. 안가쪽 위치는 발 너비로 정규화합니다.</small></div>
 <div><h3>GRF<br><small>Ground Reaction Force · 지면반발력</small></h3><label>성분 <select id="forceAxis"><option value="all">세 성분</option><option value="0">수직</option><option value="1">앞뒤</option><option value="2">안가쪽</option></select></label><div class="kinetic-key"><span class="mint">수직</span><span class="amber">앞뒤</span><span class="violet">안가쪽</span></div><canvas id="grfCanvas" class="direct-scrub" height="240" tabindex="0" role="slider" aria-label="지면반발력 그래프에서 보행 시점 선택" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></canvas><p id="grfValue"></p><small>단위는 체중 대비 %. 위쪽·앞쪽·가쪽이 양수입니다.</small></div>
 </div><p><small>압력중심은 기준 발이 지면을 누르는 동안에만 표시합니다. 점선은 제공된 전체 경로입니다.</small></p>
-</section><section class="card" id="practice"><h2>관찰 → 해석 → 추가 평가</h2><button id="practiceStart" type="button">이름을 가린 사례 보기</button><button id="practiceExit" type="button" hidden>실습 종료</button><p id="practicePrompt"></p><form id="practiceForm" hidden><div class="practice-fields" id="practiceFields"></div><button type="submit">답 확인</button></form><p id="practiceFeedback" role="status"></p></section><section class="card quiz"><h2>관찰 퀴즈</h2><small id="record"></small><button id="observe">문항의 관찰 장면 보기</button><p id="question"></p><div id="answers"></div><p id="feedback" role="status"></p><button id="next" hidden>다음 문항</button></section>
-<section class="card"><h2>보행 기록 가져오기</h2><div class="toolbar"><input id="file" type="file" accept=".json,application/json" aria-label="보행 기록 파일"><button id="sample">예시 JSON 저장</button><button id="reset">내장 모델 복원</button></div><p id="status" role="status">내장 교육용 모델을 사용 중입니다.</p><details><summary>파일 형식 및 개발 범위</summary><p>JSON의 name과 samples를 입력합니다. 각 표본은 phase(0–100), right와 left(엉덩관절·무릎관절·발목관절의 각도 배열)를 포함하며, 양 끝점과 오름차순의 시점이 필요합니다. events는 7개 단계 경계의 배열이며 생략하면 교육용 기본값을 적용합니다. 기록은 브라우저 메모리에서 재생합니다.</p><p>기존 관절각 JSON을 계속 사용할 수 있습니다. 새 선택 항목은 모두 파일의 공통 0–100% 시간축을 사용합니다.</p><p><code>contacts.right</code> / <code>contacts.left</code>는 <code>[초기접촉%, 발가락떼기%]</code>입니다. 디딤기가 100%에서 0%로 이어지는 경우 발가락떼기 값이 초기접촉 값보다 작습니다. <code>kinetics.right</code> / <code>kinetics.left</code>에는 각각 <code>cop</code>와 <code>grf</code>를 선택적으로 입력할 수 있습니다. <code>cop</code>의 각 행은 <code>[시점%, 발길이%, 발너비%]</code>, <code>grf</code>의 각 행은 <code>[시점%, 수직, 앞뒤, 안가쪽]</code>이며 힘의 단위는 체중 대비 %입니다. 힘 데이터에는 0%와 100% 행을 포함하세요. <code>source</code>에 측정 출처를 입력할 수 있습니다.</p><p>퀴즈 응답 수는 이 브라우저에 저장됩니다. Supabase 인증, Notion 승인 동기화, 실제 계측 장비 스트리밍, GitHub·Vercel 배포는 외부 프로젝트 연결이 필요한 단계입니다.</p><a href="https://www.ouhsc.edu/bserdac/dthompso/web/gait/terms.htm">보행 단계의 영문 기준</a></details></section>
+</section><section class="card" id="practice"><h2>관찰 → 해석 → 추가 평가</h2><button id="practiceStart" type="button">이름을 가린 사례 보기</button><button id="practiceExit" type="button" hidden>실습 종료</button><p id="practicePrompt"></p><form id="practiceForm" hidden><div class="practice-fields" id="practiceFields"></div><button type="submit">답 확인</button></form><p id="practiceFeedback" role="status"></p></section><section class="card quiz"><h2>관찰 퀴즈</h2><form id="gaitAccount" class="toolbar">
+<label>이메일 <input name="email" type="email" autocomplete="email" required></label>
+<label>비밀번호 <input name="password" type="password" autocomplete="current-password" required></label>
+<button type="submit" value="login">로그인</button>
+<button type="submit" value="signup">학생 계정 만들기</button>
+</form><button type="button" id="gaitLogout" hidden>로그아웃</button>
+<p id="gaitSync" role="status"></p><small id="record"></small><button id="observe">문항의 관찰 장면 보기</button><p id="question"></p><div id="answers"></div><p id="feedback" role="status"></p><button id="next" hidden>다음 문항</button></section>
+<section class="card"><h2>보행 기록 가져오기</h2><div class="toolbar"><input id="file" type="file" accept=".json,application/json" aria-label="보행 기록 파일"><button id="sample">예시 JSON 저장</button><button id="reset">내장 모델 복원</button></div><p id="status" role="status">내장 교육용 모델을 사용 중입니다.</p><details><summary>파일 형식 및 개발 범위</summary><p>JSON의 name과 samples를 입력합니다. 각 표본은 phase(0–100), right와 left(엉덩관절·무릎관절·발목관절의 각도 배열)를 포함하며, 양 끝점과 오름차순의 시점이 필요합니다. events는 7개 단계 경계의 배열이며 생략하면 교육용 기본값을 적용합니다. 기록은 브라우저 메모리에서 재생합니다.</p><p>기존 관절각 JSON을 계속 사용할 수 있습니다. 새 선택 항목은 모두 파일의 공통 0–100% 시간축을 사용합니다.</p><p><code>contacts.right</code> / <code>contacts.left</code>는 <code>[초기접촉%, 발가락떼기%]</code>입니다. 디딤기가 100%에서 0%로 이어지는 경우 발가락떼기 값이 초기접촉 값보다 작습니다. <code>kinetics.right</code> / <code>kinetics.left</code>에는 각각 <code>cop</code>와 <code>grf</code>를 선택적으로 입력할 수 있습니다. <code>cop</code>의 각 행은 <code>[시점%, 발길이%, 발너비%]</code>, <code>grf</code>의 각 행은 <code>[시점%, 수직, 앞뒤, 안가쪽]</code>이며 힘의 단위는 체중 대비 %입니다. 힘 데이터에는 0%와 100% 행을 포함하세요. <code>source</code>에 측정 출처를 입력할 수 있습니다.</p><p>로그인하면 퀴즈 응답과 문항의 관찰 장면 열기 기록을 학생 계정에 자동 저장합니다. 로그인 전 퀴즈 응답 수는 이 브라우저에서 확인할 수 있습니다. 가져온 보행 파일은 브라우저에서 재생합니다.</p><a href="https://www.ouhsc.edu/bserdac/dthompso/web/gait/terms.htm">보행 단계의 영문 기준</a></details></section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -2321,16 +2328,146 @@ const quiz=[
 ];
 let q=0, target=0, answered=false, record={total:0,correct:0};
 try{const saved=JSON.parse(localStorage.getItem('gait-learning-v1'));if(Number.isInteger(saved?.total)&&Number.isInteger(saved?.correct)&&saved.correct>=0&&saved.correct<=saved.total)record=saved;}catch{}
-function stats(){ $('record').textContent='이 브라우저 학습 기록 · '+record.correct+'문항 정답 / '+record.total+'문항 응답';}
+let gaitDb;
+try {
+ gaitDb = window.supabase?.createClient('https://egwwmhmftixjmvrtivfm.supabase.co', "sb_publishable_zz7DgyaZayieo2vKGXhvrw_v6iHfLti");
+} catch {}
+let gaitUser = null, cloudRecord = null, syncing = false, rerunSync = false;
+const gaitPending = new Map();
+const syncStatus = (message) => { $('gaitSync').textContent = message; };
+const queuePrefix = (userId) => 'gait-sync-v1:' + userId + ':';
+
+function stats() {
+ const data = gaitUser ? cloudRecord : record;
+ $('record').textContent = data
+  ? (gaitUser ? '계정 학습 기록' : '이 브라우저 학습 기록') + ' · ' + data.correct + '문항 정답 / ' + data.total + '문항 응답'
+  : '계정 학습 기록을 불러오는 중입니다.';
+}
+
+function queueGaitRecord(table, data) {
+ if (!gaitUser) return;
+ const id = crypto.randomUUID();
+ const entry = { table, row: { ...data, user_id: gaitUser.id, client_event_id: id, created_at: new Date().toISOString() } };
+ const key = queuePrefix(gaitUser.id) + id;
+ gaitPending.set(key, entry);
+ try { localStorage.setItem(key, JSON.stringify(entry)); } catch {}
+ void syncGaitRecords();
+}
+
+async function syncGaitRecords() {
+ if (!gaitDb || !gaitUser) return;
+ if (syncing) { rerunSync = true; return; }
+ syncing = true;
+ const userId = gaitUser.id;
+ const prefix = queuePrefix(userId);
+ try {
+  const entries = new Map([...gaitPending].filter(([key]) => key.startsWith(prefix)));
+  try {
+   for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(prefix) && !entries.has(key)) {
+     try { entries.set(key, JSON.parse(localStorage.getItem(key))); } catch {}
+    }
+   }
+  } catch {}
+  for (const table of ['gait_quiz_attempts', 'gait_study_events']) {
+   const batch = [...entries].filter(([, entry]) => entry?.table === table && entry.row?.user_id === userId);
+   if (!batch.length) continue;
+   if (gaitUser?.id !== userId) return;
+   syncStatus('학습 기록을 저장하는 중입니다.');
+   const { error } = await gaitDb.from(table).upsert(batch.map(([, entry]) => entry.row), {
+    onConflict: 'user_id,client_event_id', ignoreDuplicates: true
+   });
+   if (error) throw error;
+   for (const [key] of batch) {
+    gaitPending.delete(key);
+    try { localStorage.removeItem(key); } catch {}
+   }
+  }
+  const totals = () => gaitDb.from('gait_quiz_attempts').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+  const [all, correct] = await Promise.all([totals(), totals().eq('correct', true)]);
+  if (all.error || correct.error) throw all.error || correct.error;
+  if (gaitUser?.id !== userId) return;
+  cloudRecord = { total: all.count, correct: correct.count };
+  stats();
+  syncStatus('로그인됨 · 학습 기록이 자동 저장됩니다.');
+ } catch {
+  if (gaitUser?.id === userId) syncStatus('학습 기록 동기화에 실패했습니다. 연결이 복구되면 다시 시도합니다.');
+ } finally {
+  syncing = false;
+  if (rerunSync) { rerunSync = false; void syncGaitRecords(); }
+ }
+}
+
+function setGaitAccount(session) {
+ const nextUser = session?.user || null;
+ if (gaitUser?.id !== nextUser?.id) cloudRecord = null;
+ gaitUser = nextUser;
+ $('gaitAccount').hidden = Boolean(gaitUser);
+ $('gaitAccount').style.display = gaitUser ? 'none' : '';
+ $('gaitLogout').hidden = !gaitUser;
+ stats();
+ if (gaitUser) void syncGaitRecords();
+ else syncStatus('로그인하면 학생 계정에 학습 기록이 저장됩니다.');
+}
+
+const gaitAccount = $('gaitAccount');
+gaitAccount.addEventListener('submit', async (event) => {
+ event.preventDefault();
+ if (!gaitDb) { syncStatus('학습 기록 서버에 연결할 수 없습니다.'); return; }
+ const buttons = [...gaitAccount.querySelectorAll('button')];
+ buttons.forEach(button => { button.disabled = true; });
+ const email = gaitAccount.elements.email.value.trim();
+ const password = gaitAccount.elements.password.value;
+ const signup = event.submitter?.value === 'signup';
+ try {
+  const { data, error } = await (signup
+   ? gaitDb.auth.signUp({ email, password, options: { emailRedirectTo: 'https://gait-analysis-theta.vercel.app' } })
+   : gaitDb.auth.signInWithPassword({ email, password }));
+  if (error) {
+   syncStatus(signup ? '계정을 만들지 못했습니다. 이메일과 비밀번호(6자 이상)를 확인한 뒤 다시 시도하세요.' : '로그인하지 못했습니다. 이메일, 비밀번호, 이메일 인증 여부를 확인하세요.');
+  } else {
+   gaitAccount.elements.password.value = '';
+   if (data.session) setGaitAccount(data.session);
+   else syncStatus('인증 메일을 확인한 뒤 이 웹앱에서 로그인하세요.');
+  }
+ } catch { syncStatus('연결에 실패했습니다. 잠시 후 다시 시도하세요.'); }
+ finally { buttons.forEach(button => { button.disabled = false; }); }
+});
+$('gaitLogout').onclick = async () => {
+ const { error } = await gaitDb.auth.signOut({ scope: 'local' });
+ if (error) syncStatus('로그아웃하지 못했습니다. 다시 시도하세요.');
+ else setGaitAccount(null);
+};
+if (gaitDb) {
+ gaitDb.auth.onAuthStateChange((event, session) => {
+  if (['INITIAL_SESSION', 'SIGNED_IN', 'SIGNED_OUT'].includes(event)) setTimeout(() => setGaitAccount(session), 0);
+ });
+ window.addEventListener('online', syncGaitRecords);
+ setInterval(() => {
+  if (gaitUser && (!cloudRecord || [...gaitPending.keys()].some(key => key.startsWith(queuePrefix(gaitUser.id))))) void syncGaitRecords();
+ }, 15000);
+} else syncStatus('학습 기록 서버를 불러오지 못했습니다. 퀴즈는 이 브라우저에서 이용할 수 있습니다.');
 function renderQuiz(){
- answered=false;$('feedback').textContent='';$('next').hidden=true;
+ answered=false;const shownAt=performance.now();$('feedback').textContent='';$('next').hidden=true;
  const [, ,question,choices,right,explain,errors]=quiz[q];
  $('question').textContent=question;$('answers').replaceChildren();
  choices.forEach((choice,i)=>{
   const b=document.createElement('button');b.textContent=choice;b.onclick=()=>{
    if(answered)return;
-   answered=true;record.total++;const correct=i===right;if(correct)record.correct++;
-   try{localStorage.setItem('gait-learning-v1',JSON.stringify(record));}catch{}
+   answered=true;
+   const correct=i===right;
+   if(gaitUser) {
+    queueGaitRecord('gait_quiz_attempts', {
+     question_id:'gait-observation-v1-' + (q+1),
+     variant_of:q%2 ? 'gait-observation-v1-' + q : null,
+     topic:['발목 초기접촉','골반 조절','흔듦기 발끝 간격'][Math.floor(q/2)],
+     chosen:i,correct,duration_ms:Math.round(performance.now()-shownAt)
+    });
+   } else {
+    record.total++;if(correct)record.correct++;
+    try{localStorage.setItem('gait-learning-v1',JSON.stringify(record));}catch{}
+   }
    stats();b.setAttribute('aria-pressed','true');
    $('feedback').textContent=correct?'정답입니다. '+explain:'선택한 답의 해설 · '+errors[i]+'\n정답 · '+choices[right]+'\n'+explain;
    target=(!correct&&q%2===0)?q+1:(Math.floor(q/2)*2+2)%quiz.length;
@@ -2339,7 +2476,7 @@ function renderQuiz(){
  });
 }
 $('next').onclick=()=>{q=target;renderQuiz();$('answers').firstElementChild.focus();};
-$('observe').onclick=()=>{if(practiceActive)exitPractice();setPlaying(false);if(imported)$('reset').click();position=quiz[q][0];$('case').value=quiz[q][1];changeCase();$('time').focus();};
+$('observe').onclick=()=>{queueGaitRecord('gait_study_events',{module:'quiz_observation',detail:{question_id:'gait-observation-v1-' + (q+1),phase:quiz[q][0]}});if(practiceActive)exitPractice();setPlaying(false);if(imported)$('reset').click();position=quiz[q][0];$('case').value=quiz[q][1];changeCase();$('time').focus();};
 stats();renderQuiz();draw();
 </script>
 </html>
