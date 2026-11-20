@@ -1,0 +1,2345 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>보행 분석 실습실</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#081321;color:#eef5ff;font:16px system-ui,sans-serif}main,header>div{max-width:1240px;margin:auto;padding:24px}header{border-bottom:1px solid #28415a}header span,small{color:#9db8cf}h1{margin:8px 0;font-size:clamp(28px,5vw,44px)}h2{font-size:20px;margin:0 0 14px}p{line-height:1.55}button,select,input{font:inherit}button,select,.file{background:#162c42;color:#eef5ff;border:1px solid #41627d;border-radius:8px;padding:9px 12px}button,.file{cursor:pointer}button[aria-pressed=true]{background:#52e5cd;color:#082328;border-color:#52e5cd;font-weight:700}button:focus-visible,select:focus-visible,input:focus-visible,.file:focus-within{outline:3px solid #ffcc74;outline-offset:3px}.card{background:#102035;border:1px solid #28415a;border-radius:14px;padding:18px;margin-bottom:14px}.toolbar,.phases{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.phases button{flex:1;min-width:105px}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.row.one{grid-template-columns:1fr}canvas{width:100%;display:block;background:#091828;border-radius:9px}input[type=range]{width:100%;accent-color:#52e5cd}.mint{color:#52e5cd}.amber{color:#ffcc74}.violet{color:#cbb0ff}a{color:#81eee0}.quiz button{display:block;margin:8px 0;text-align:left}#feedback{white-space:pre-line}label{display:inline-flex;gap:8px;align-items:center}#file{max-width:100%}@media(max-width:700px){main,header>div{padding:14px}.row{grid-template-columns:1fr}}
+.kinetic-key{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}.kinetic-key span{white-space:nowrap}.muscle-track{display:grid;grid-template-columns:minmax(110px,1fr) repeat(8,minmax(15px,1fr));gap:3px;align-items:center;margin:4px 0;font-size:.81rem}.muscle-cell{border:1px solid #31495f;border-radius:4px;text-align:center;padding:4px 0}.muscle-cell.current{border:2px solid white;padding:3px 0}.muscle-label{overflow-wrap:anywhere}.muscle-cell.mint{background:#123c3d}.muscle-cell.amber{background:#453822}.muscle-cell.violet{background:#352d50}
+[hidden]{display:none!important}.contact-row{display:grid;grid-template-columns:4rem 1fr;gap:8px;align-items:center;margin:7px 0}.contact-track{position:relative;height:18px;background:#273b52;border-radius:5px;overflow:hidden}.contact-segment,.contact-cursor{position:absolute;height:100%;top:0}.contact-segment{background:#258e82}.contact-segment.double{background:#a77830}.contact-cursor{width:2px;background:white}.practice-fields{display:grid;gap:8px}.practice-fields label{display:grid;gap:4px}.practice-fields select{width:100%;white-space:normal}.practice-fields+button{margin-top:10px}
+.filmstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px}.filmstrip button{width:100%;overflow:hidden;text-align:left}.filmstrip canvas{margin-bottom:5px}.filmstrip .film-caption{display:block;margin-top:4px;font-size:.82rem}.filmstrip button[aria-pressed="true"]{border-color:#52e5cd;box-shadow:0 0 0 1px #52e5cd inset}
+.motion-deltas{display:flex;flex-wrap:wrap;gap:8px 18px;margin:8px 0}.motion-deltas div{background:#102a40;border-radius:7px;padding:6px 10px}.motion-deltas dt{color:#b9cce0;font-size:.85rem}.motion-deltas dd{color:#e6c4ff;font-variant-numeric:tabular-nums;font-weight:700;margin:0}
+.multi-view{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:600px){.multi-view{grid-template-columns:1fr}}.multi-view h3{margin:10px 0 6px;font-size:1rem}.multi-view p{margin:5px 0 12px}.multi-model+ .multi-model{border-top:1px solid #28415a;padding-top:12px;margin-top:12px}@media(max-width:420px){.multi-view{gap:6px}.multi-view h3{font-size:.9rem}}
+.muscle-view-controls{margin-top:10px}.muscle-view-controls select{max-width:100%}.muscle-map-note{margin:7px 0 0;color:#d9c8ff}
+.direct-scrub{touch-action:pan-y;cursor:ew-resize}.drag-camera{touch-action:pan-y;cursor:grab}.drag-camera[data-dragging]{cursor:grabbing}.direct-scrub:focus-visible,.drag-camera:focus-visible{outline:2px solid #63dfd2;outline-offset:3px}
+.row>.card{min-width:0}.muscle-matrix-wrap{overflow-x:auto;padding:3px 3px 8px}.muscle-matrix{width:100%;min-width:500px;border-spacing:3px;font-size:.83rem}.muscle-matrix th{font-weight:600;color:#bad0e5}.muscle-matrix th[scope=row]{text-align:left;white-space:nowrap}.muscle-matrix .muscle-cell{width:100%;min-width:30px;padding:4px 2px;font-size:.78rem}.muscle-matrix .muscle-cell.current{padding:3px 1px}.muscle-matrix button[aria-pressed=true]{outline:2px solid #66efdc;outline-offset:0}.muscle-detail{padding:10px 12px;background:#19344d;border-radius:8px;margin:10px 0}.muscle-detail p{margin:3px 0}
+.muscle-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.muscle-pair article{background:#19334b;border-radius:8px;padding:9px}.muscle-pair h4{margin:0 0 5px;font-size:.9rem}.muscle-pair p{margin:4px 0;font-size:.86rem}.muscle-pair article:first-child h4{color:#61e5d3}.muscle-pair article:nth-child(2) h4{color:#cbb0ff}@media(max-width:410px){.muscle-pair{grid-template-columns:1fr}}
+.muscle-clinical{margin-top:12px;padding:11px;background:#19334b;border-radius:8px}.muscle-clinical select{width:100%;margin:6px 0}.muscle-clinical dl{margin:.7em 0}.muscle-clinical dt{font-weight:700;color:#8de5d9}.muscle-clinical dd{margin:3px 0 9px}
+.moment-card{margin-top:12px;padding:11px;background:#19334b;border-radius:8px}.moment-card canvas{margin-top:8px}.moment-card p{margin:8px 0}
+.muscle-timing{margin-top:11px;padding:10px;background:#19334b;border-radius:8px}.muscle-timing label{display:grid;flex:1 1 145px;gap:4px}.muscle-timing select{width:100%}.muscle-timing-grid{min-width:480px;display:grid;gap:4px;align-items:stretch}.muscle-timing-grid button{padding:4px 2px;min-width:0}.muscle-timing-grid .timing-current{outline:2px solid #f1f8ff;outline-offset:-2px}.muscle-timing-grid .timing-header{padding:3px 0;text-align:center;color:#bdd3e5;font-size:.75rem}.muscle-timing-overflow{overflow-x:auto;margin:8px 0}.muscle-timing-help{color:#bfd5e8}.muscle-compare-roles{padding-left:1.2em}
+.muscle-quiz{margin-top:12px;padding:11px;background:#19334b;border-radius:8px}.muscle-quiz canvas{margin:8px 0}.muscle-quiz .toolbar{margin:8px 0}.muscle-quiz .quiz-answer{text-align:left}.muscle-quiz .quiz-answer[aria-pressed=true]{outline:2px solid #e5c7ff}.muscle-quiz .quiz-answer[data-correct]{border-color:#65dcc5}
+.emg-overview{margin:12px 0;padding:10px;background:#192f46;border-radius:8px}.emg-overview button{width:100%;min-width:74px;white-space:nowrap;font-variant-numeric:tabular-nums}.emg-overview .current-emg-phase{outline:2px solid #f1f8ff;outline-offset:-2px}.emg-overview table{min-width:695px}.emg-overview .overview-color{background:linear-gradient(90deg,rgba(37,149,132,.58) var(--level),#172939 var(--level))}
+.emg-overview #emgOverlapRows button{width:auto;min-width:0;margin:2px}.emg-overview #emgOverlapRows th{text-align:left}
+.rear-comparison .multi-panes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rear-comparison .multi-model{min-width:0;margin:0;padding:0;border:0}.rear-comparison .multi-view{grid-template-columns:1fr}.rear-comparison .multi-view>div:not(:last-child){display:none}@media(max-width:480px){.rear-comparison .multi-panes{gap:6px}.rear-comparison .multi-model>h3{font-size:.9rem;overflow-wrap:anywhere}}
+</style>
+<header><div><span>창원대학교 물리치료학과 · 교육용</span><h1>보행 분석 실습실</h1><small>보행 단계별로 관절 움직임을 관찰하고 정상 보행과 교육용 사례를 비교하세요.</small></div></header>
+<main>
+<section class="card"><h2>보행 주기 <output id="pct" class="mint"></output></h2><input id="time" type="range" min="0" max="100" step=".1" value="0" aria-label="보행 주기 위치"><div id="phases" class="phases"></div><h3>좌우 보행 사건</h3><div id="contactTracks"></div><p><small id="contactNote"></small></p><div id="eventButtons" class="toolbar"></div><div class="toolbar"><label><input id="guideEvents" type="checkbox"> 보행 사건에서 자동 정지</label><button id="guideRestart" type="button" hidden>처음부터 관찰</button></div><p id="guideStatus" role="status" hidden></p><p id="phaseInfo"></p><div class="toolbar"><button id="play" type="button">재생</button><label>속도 <select id="speed"><option value=".1">0.1배</option><option value=".25">0.25배</option><option value=".5">0.5배</option><option value="1" selected>1배</option></select></label><label>1배속 주기 시간 <select id="cycleDuration"><option value="1.2">1.2초</option><option value="1.8" selected>1.8초</option><option value="2.4">2.4초</option><option value="3.6">3.6초</option></select></label><label>시점 <select id="view"><option value="0">옆면</option><option value="45">사선</option><option value="90">앞면</option><option value="-90">뒷면</option><option value="custom" disabled>사용자 시점</option></select></label><button id="jumpRearView" type="button">정상·이상 뒷면 비교</button><label>기준 다리 <select id="side"><option value="0">오른쪽</option><option value="1">왼쪽</option></select></label><label>비교 <select id="case"><option value="0">정상만 보기</option><option value="1">엉덩관절 벌림근 약화</option><option value="2">발목관절 발바닥굽힘 구축</option><option value="3">뇌졸중 후 편마비</option><option value="4">발처짐</option><option value="5">소뇌실조 보행</option><option value="6">파킨슨 보행</option></select></label></div></section>
+<section class="card"><h2>애니메이션 보기</h2><div class="toolbar"><label>모형 보간 <select id="motionInterpolation"><option value="smooth">부드럽게</option><option value="linear">선형</option></select></label><label>모형 표현 <select id="sceneStyle"><option value="body">입체 분절</option><option value="joint">관절 연결선</option></select></label><button id="frameBack" type="button">−0.5%</button><button id="frameForward" type="button">+0.5%</button><label>확대 <select id="sceneZoom"><option value="1">기본</option><option value="1.18">확대</option></select></label><label><input id="sceneGuides" type="checkbox" checked> 관절점·발 접촉 안내</label><label><input id="sceneTrail" type="checkbox"> 흔듦기 발끝 궤적</label><label><input id="phaseLoop" type="checkbox"> 현재 단계 반복</label><label><input id="sceneAngles" type="checkbox"> 관절각 표시</label></div><div class="toolbar"><label>수평 회전 <input id="cameraYaw" type="range" min="-180" max="180" step="1" value="0"><output id="cameraYawValue">0°</output></label><label>내려다보는 각도 <input id="cameraPitch" type="range" min="0" max="35" step="1" value="11"><output id="cameraPitchValue">11°</output></label></div><div class="toolbar"><label><input id="sceneOverlay" type="checkbox"> 비교 화면에 기준 자세 겹치기</label><label><input id="sceneDifferences" type="checkbox"> 관절 차이 표시</label><button id="posePin" type="button">현재 기준 자세 고정</button><button id="poseClear" type="button" hidden>고정 해제</button></div><div class="toolbar"><label><input id="sceneForce" type="checkbox"> 압력중심·지면반발력 표시</label><label>힘 방향 <select id="sceneForceAxis" disabled><option value="resultant">합력</option><option value="vertical">수직</option><option value="forward">앞뒤</option><option value="lateral">안가쪽</option></select></label></div><p id="sceneForceInfo" hidden></p><div class="toolbar muscle-view-controls"><label>근육 위치 보기 <select id="sceneMuscle"><option value="">표시 안 함</option></select></label></div><p id="sceneMuscleInfo" class="muscle-map-note" hidden></p><p id="overlayInfo" hidden></p><div id="motionDeltaPanel" hidden><p id="motionDeltaNote"></p><dl id="motionDeltas" class="motion-deltas"></dl></div><p id="trailInfo" hidden><small>점선은 기준 다리의 흔듦기 발끝 궤적입니다. 자세 모형에서 계산하며 지면 위 실제 이동 거리로 환산하지 않습니다.</small></p><div class="toolbar"><label><input id="sceneGhosts" type="checkbox"> 앞뒤 자세 잔상</label><label>잔상 간격 <select id="ghostSpacing" disabled><option value="2.5">2.5%</option><option value="5" selected>5%</option><option value="10">10%</option></select></label></div><p id="ghostInfo" hidden><small>파란 잔상은 이전 자세, 분홍 잔상은 이후 자세입니다. 실선 모형은 현재 자세입니다.</small></p><div class="toolbar"><button id="markLoopStart" type="button">이 시점을 시작으로</button><button id="markLoopEnd" type="button">이 시점을 끝으로</button><label><input id="customLoop" type="checkbox" disabled> 지정 구간 반복</label><button id="clearLoop" type="button" disabled>구간 지우기</button></div><p id="loopMarkers" role="status"></p><p id="loopInfo" hidden></p><p><small>청록은 기준 다리, 황색은 비교 모형의 기준 다리입니다. 발 아래 색 표시는 기준 시간축의 디딤기입니다. 비교 모형에도 같은 접촉 시간표를 적용합니다.</small></p><p id="supportText"></p><div class="toolbar"><label><input id="sceneWalkway" type="checkbox"> 이동 바닥과 발자국</label></div><p id="walkwayNote" hidden></p><p><small>보행 모형을 좌우로 끌면 두 화면의 시점이 함께 돌아갑니다. 마우스로 위아래를 끌면 내려다보는 각도를 조절합니다.</small></p><p id="interpolationNote"><small>부드러운 보간은 교육용 모형의 기준 표본 시점과 각도를 유지합니다. 주기 시간은 화면에서 한 주기를 재생하는 시간입니다.</small></p></section>
+<div class="row one" id="scenes"><section class="card"><h2 id="baseTitle">정상 보행 · 교육용 모델</h2><canvas id="normal" class="drag-camera" height="330" tabindex="0" role="img" aria-label="기준 보행 모형. 드래그 또는 방향키로 시점 조절"></canvas></section><section class="card" id="comparison" hidden><h2 id="caseTitle"></h2><canvas id="abnormal" class="drag-camera" height="330" tabindex="0" role="img" aria-label="비교 보행 모형. 드래그 또는 방향키로 시점 조절"></canvas><p id="caseText"></p><details id="compensationPanel" hidden><summary>보상 움직임 비교</summary><p id="compensationExplanation"></p><div class="toolbar"><label id="steppageLabel"><input id="compSteppage" type="checkbox" checked> 엉덩관절·무릎관절 굽힘 증가</label><label id="hipHikeLabel"><input id="compHipHike" type="checkbox" checked> 골반 올림</label><label id="circumductionLabel"><input id="compCircumduction" type="checkbox" checked> 휘돌림</label><button id="compScene" type="button">흔듦기 비교 장면</button></div><p><small>체크를 끄면 해당 보상만 줄입니다. 기본 관절 움직임 제한은 같은 교육용 설정을 유지합니다.</small></p></details><div id="modelBlendPanel" hidden><label for="modelBlend">비교 모형 반영 비율 <output id="modelBlendValue">100%</output></label><input id="modelBlend" type="range" min="0" max="100" step="1" value="100"><p><small>0%는 내장 정상 모형, 100%는 선택한 이상 보행 모형입니다. 중간값은 두 교육용 모형 사이의 보간값입니다.</small></p></div><button id="ataxicCycle" type="button" hidden>예시 주기 A · 다른 주기 보기</button><p><small><a id="caseSource" hidden>보행 특징 근거</a></small></p></section></div>
+<section class="card"><h2>고정 카메라로 전진 보기</h2><label><input id="showFixedWalk" type="checkbox"> 보행로 전체 보기</label><div id="fixedWalk" hidden><div class="toolbar"><button id="playFixedWalk" type="button">처음부터 한 주기 재생</button></div><p id="fixedWalkInfo"></p><div id="fixedWalkModels"><h3 id="fixedReferenceTitle"></h3><canvas id="fixedReference" role="img" aria-label="고정 시점의 기준 보행 모형"></canvas><div id="fixedComparison" hidden><h3 id="fixedCaseTitle"></h3><canvas id="fixedCase" role="img" aria-label="고정 시점의 비교 보행 모형"></canvas></div></div><p><small>두 화면의 출발선과 축척이 같습니다. 이동량은 내장 교육용 모형의 예시 값입니다.</small></p></div></section>
+<section class="card" id="multiViewSection"><h2>앞면·옆면·뒷면 동시 관찰</h2><label><input id="showMultiView" type="checkbox" checked> 세 시점 함께 보기</label><div id="multiView" hidden><p id="multiPhase"></p><button id="backToMultiView" type="button" hidden>세 시점 다시 보기</button><div class="multi-panes"><div class="multi-model"><h3 id="multiReferenceTitle"></h3><div class="multi-view"><div><h3>앞면</h3><canvas id="multiFront" role="img" aria-label="기준 보행 앞면"></canvas><p><small>골반 높이와 발 사이 간격</small></p></div><div><h3>옆면</h3><canvas id="multiSide" role="img" aria-label="기준 보행 옆면"></canvas><p><small>무릎 굽힘과 발끝 높이</small></p></div><div><h3 id="rearViewHeading" tabindex="-1">뒷면</h3><canvas id="multiRear" role="img" aria-label="기준 보행 뒷면"></canvas><p><small>골반 높이와 뒤에서 본 발꿈치 경로</small></p></div></div></div><div class="multi-model" id="multiComparison" hidden><h3 id="multiCaseTitle"></h3><div class="multi-view"><div><h3>앞면</h3><canvas id="multiCaseFront" role="img" aria-label="비교 보행 앞면"></canvas></div><div><h3>옆면</h3><canvas id="multiCaseSide" role="img" aria-label="비교 보행 옆면"></canvas></div><div><h3>뒷면</h3><canvas id="multiCaseRear" role="img" aria-label="비교 보행 뒷면"></canvas></div></div></div></div></div></section>
+<section class="card"><h2>위에서 보는 어깨·골반 돌림</h2><label><input id="showRotation" type="checkbox"> 가로면 돌림 보기</label><div id="rotationPanel" hidden><div class="row"><div><h3 id="rotationBaseTitle"></h3><canvas id="rotationBase" role="img" aria-label="기준 보행의 가로면 어깨와 골반 축"></canvas><p id="rotationBaseValues"></p></div><div id="rotationComparePanel" hidden><h3 id="rotationCompareTitle"></h3><canvas id="rotationCompare" role="img" aria-label="비교 보행의 가로면 어깨와 골반 축"></canvas><p id="rotationCompareValues"></p></div></div><p><small>청록은 골반 축, 보라는 어깨 축입니다. 오른쪽 끝이 전진 방향으로 앞서면 양수입니다. 상대 돌림은 어깨 각도에서 골반 각도를 뺀 값입니다. 내장 교육용 모형의 값입니다.</small></p></div></section>
+<section class="card"><h2>흔듦기 발끝 높이</h2><label><input id="showToeClearance" type="checkbox"> 발끝 높이 비교</label><div id="toeClearance" hidden><canvas id="toeClearanceChart" class="direct-scrub" height="194" tabindex="0" role="slider" aria-label="발끝 높이 그래프에서 흔듦기 시점 선택" aria-valuemin="60" aria-valuemax="100" aria-valuenow="60"></canvas><p id="toeClearanceNow"></p><p id="toeClearanceLow"></p><small>청록은 기준 모형, 황색은 비교 모형입니다. 다리 분절 길이 합에 대한 백분율로 표시한 교육용 값입니다. 그래프를 누르면 해당 장면으로 이동합니다.</small></div></section>
+<section class="card"><h2>발의 구르기 확대</h2><label><input id="showFootDetail" type="checkbox"> 기준 발 확대 보기</label><div id="footDetail" hidden><div class="toolbar" id="rockerButtons"><button type="button" id="heelRocker">발꿈치 구르기</button><button type="button" id="ankleRocker">발목 구르기</button><button type="button" id="forefootRocker">앞발 구르기</button><button type="button" id="toeOffDetail">발가락떼기</button></div><canvas id="footCanvas" role="img" aria-label="아래다리와 기준 발의 옆면 확대"></canvas><p id="footDetailText"></p><small>정상 보행 교육용 모형의 예시 장면입니다. 발가락 관절의 각도는 모형값입니다.</small><p><small><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6602390/">발꿈치·발목·앞발 구르기 참고자료</a></small></p></div></section>
+<section class="card"><h2>수업 자료로 저장</h2><div class="toolbar"><button id="saveGaitImage" type="button">현재 자세 PNG 저장</button><button id="saveGaitVideo" type="button">한 주기 영상 저장</button><button id="cancelGaitVideo" type="button" hidden>영상 저장 취소</button></div><p id="exportStatus" role="status"></p><small>기준·비교 모형과 보행 시점을 함께 저장합니다. 영상은 현재 카메라 각도와 재생 속도로 0–100%를 재생하며, 브라우저에 따라 저장 형식이 달라집니다.</small></section>
+<section class="card"><h2>보행 연속 장면</h2><label><input id="showFilmstrip" type="checkbox"> 주요 장면 펼치기</label><p id="filmInfo" hidden>각 장면을 누르면 그 시점에서 멈춥니다. 이상 보행을 선택하면 그 사례의 연속 장면이 표시됩니다.</p><div id="filmstrip" class="filmstrip" hidden></div></section>
+<div class="row"><section class="card"><h2>관절각 곡선</h2><label>관절 <select id="joint"><option value="0">엉덩관절</option><option value="1">무릎관절</option><option value="2">발목관절</option><option value="3">허리관절</option><option value="4">엉치엉덩관절</option><option value="5">골반 · 앞뒤 기울기</option><option value="6">골반 · 가쪽 기울기</option><option value="7">골반 · 돌림</option><option value="8">몸통 · 가쪽 기울기</option></select></label><canvas id="chart" class="direct-scrub" height="210" tabindex="0" role="slider" aria-label="관절각 그래프에서 보행 시점 선택" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></canvas><p id="values"></p><p><small>그래프를 누르거나 가로로 끌어 해당 자세로 이동합니다. 키보드의 좌우 방향키로도 이동할 수 있습니다.</small></p><small id="angleLegend">단위 ° · 굽힘과 발등굽힘이 양수입니다. 청록은 기준 보행, 황색은 비교 사례입니다.</small></section><section class="card"><h2>단계별 근육 해석</h2><p id="muscle"></p><ul id="phaseMuscleRoles" hidden></ul><details id="bilateralMuscles"><summary>같은 순간, 양쪽 다리의 역할 비교</summary><p id="bilateralMuscleIntro"><small>내장 정상 보행 모형의 좌우 50% 시차를 사용합니다.</small></p><div class="muscle-pair" id="musclePair"><article><h4 id="refTaskTitle"></h4><p id="refTaskBody"></p><p id="refTaskMuscles"></p></article><article><h4 id="otherTaskTitle"></h4><p id="otherTaskBody"></p><p id="otherTaskMuscles"></p></article></div><p id="cooperationHint"></p><p><small>주요 근육은 단계의 기능을 이해하기 위한 교육용 예시입니다. <a href="https://www.ouhsc.edu/bserdac/dthompso/web/gait/terms.htm">보행의 기능적 과제 참고자료</a></small></p></details><p><small>표의 칸을 누르면 해당 단계로 이동하고 선택한 근육의 역할이 아래에 표시됩니다.</small></p><details id="muscleTiming" class="muscle-timing"><summary>두 근육의 작용 시점 비교</summary><div class="toolbar"><label>첫 번째 근육<select id="timingMuscleA"></select></label><label>두 번째 근육<select id="timingMuscleB"></select></label></div><div class="muscle-timing-overflow"><div id="muscleTimingGrid" class="muscle-timing-grid"></div></div><p id="muscleTimingState"></p><ul id="muscleTimingRoles" class="muscle-compare-roles"></ul><small class="muscle-timing-help">초기접촉은 별도 칸입니다. 나머지 칸의 너비는 내장 정상 모형의 단계 길이를 따릅니다. 기호는 대표 수축 예시 또는 기능적 역할이며, 근전도 진폭이나 활동 시작·종료 시점을 뜻하지 않습니다.</small></details><details id="emgAnalysis" class="muscle-timing"><summary>근전도 곡선과 단계별 평균</summary><p><small>전처리한 근전도 진폭을 한 주기 0–100%로 정렬해 불러오세요. 좌우 모두 화면과 같은 시간 원점을 사용합니다.</small></p><div class="toolbar"><label>진폭 단위<select id="emgUnit"><option value="µV">마이크로볼트 (µV)</option><option value="%">정규화 진폭 (%)</option></select></label><label>근전도 CSV<input id="emgFile" type="file" accept=".csv,text/csv"></label><button id="emgExample" type="button">모의 자료 보기</button><button id="emgTemplate" type="button">예시 CSV 저장</button></div><p id="emgStatus" role="status">열 순서 phase,muscle,side,value 또는 cycle,phase,muscle,side,value · 좌우는 right 또는 left</p><div id="emgResult" hidden><label id="emgCycleLabel" hidden>보행 주기 <select id="emgCycle"></select></label><p id="emgCycleNote" hidden></p><details id="emgCycleVariation" class="emg-overview" hidden><summary>같은 단계의 주기별 진폭 차이</summary><label>보행 단계 <select id="emgVariationPhase"></select></label><p id="emgVariationSummary"></p><div class="muscle-matrix-wrap"><table class="muscle-matrix"><thead id="emgVariationHead"></thead><tbody id="emgVariationRows"></tbody></table></div><small>각 행은 해당 주기의 단계 평균입니다. 표준편차는 주기별 평균의 표본 표준편차이며 두 주기 이상일 때 표시합니다. 값을 누르면 해당 주기와 단계의 중간 자세를 엽니다.</small></details><div class="toolbar"><label>비교 방식<select id="emgMode"><option value="sides">같은 근육의 좌우</option><option value="muscles">같은 다리의 두 근육</option></select></label><label>근육<select id="emgMuscle"></select></label><label id="emgSecondLabel" hidden>비교 근육<select id="emgSecond"></select></label><label id="emgSideLabel" hidden>기록 다리<select id="emgSide"><option value="right">오른쪽</option><option value="left">왼쪽</option></select></label></div><canvas id="emgCanvas" class="direct-scrub" tabindex="0" role="slider" aria-label="근전도 그래프에서 보행 시점 선택" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></canvas><p id="emgCurrent"></p><p id="emgAverage"></p><div class="toolbar"><label><input id="emgThresholdEnabled" type="checkbox"> 기준 초과 구간 표시</label><label>진폭 기준 <input id="emgThreshold" type="number" min="0" max="1000000000" step="any" value="20" disabled><span id="emgThresholdUnit"></span></label><button id="emgExportSummary" type="button">단계별 요약 CSV 저장</button></div><p id="emgThresholdInfo"></p><details id="emgOverlapPanel" class="emg-overview"><summary>두 근육의 기준 초과 구간 겹침</summary><p id="emgOverlapInfo"></p><div id="emgOverlapResults" hidden><p id="emgOverlapTotal"></p><div class="muscle-matrix-wrap"><table class="muscle-matrix"><thead><tr><th scope="col">보행 단계</th><th scope="col">동시 초과 비율</th><th scope="col">겹친 구간 보기</th></tr></thead><tbody id="emgOverlapRows"></tbody></table></div></div><small>그래프 아래 황색 띠는 두 신호가 동시에 기준을 넘은 구간입니다. 두 근육에 같은 진폭 기준을 적용합니다. 계산값은 선택한 기준에 따른 신호 겹침을 나타내며, 근력이나 임상적 공동수축 지수로 해석할 수 없습니다.</small></details><details id="emgOverview" class="emg-overview"><summary>여러 근육의 단계별 진폭 비교</summary><label>기록 다리 <select id="emgOverviewSide"><option value="right">오른쪽</option><option value="left">왼쪽</option></select></label><p id="emgOverviewEmpty" hidden>이 다리에 기록된 근육 채널이 없습니다.</p><div class="muscle-matrix-wrap"><table class="muscle-matrix" id="emgOverviewTable"><thead id="emgOverviewHead"></thead><tbody id="emgOverviewRows"></tbody></table></div><small>각 칸의 숫자는 단계 평균 진폭입니다. 색 막대는 같은 근육의 단계 평균 중 가장 큰 값을 100%로 표시합니다. 칸을 누르면 해당 근육의 곡선과 그 단계의 중간 자세를 엽니다.</small></details><div class="muscle-matrix-wrap"><table class="muscle-matrix"><thead id="emgPeakHead"></thead><tbody id="emgPeaks"></tbody></table></div><p><small>최고 진폭은 단계 구간 안에 기록된 표본의 최댓값입니다. 기준 초과 비율은 표본 사이를 선형으로 이어 해당 단계 시간 중 기준을 엄격히 넘는 비율을 계산합니다. 같은 값이면 먼저 나타난 시점을 표시합니다. 진폭을 누르면 해당 자세로 이동합니다.</small></p><p><small>청록과 보라 곡선의 이름은 그래프 아래에 표시됩니다. 같은 단위와 정규화 기준을 사용한 자료의 진폭을 비교하세요. 평균은 구간 길이로 가중합니다. 근전도 진폭으로 근력이나 수축 유형을 판정할 수 없습니다.</small></p></div></details><details id="muscleQuiz" class="muscle-quiz"><summary>장면으로 푸는 근육 퀴즈</summary><p id="muscleQuizUnavailable" hidden>내장 교육용 모형에서 퀴즈를 풀 수 있습니다. 이름을 가린 비교 실습 중에는 해당 실습을 먼저 종료하세요.</p><div id="muscleQuizBody"><p id="muscleQuizProgress"></p><canvas id="muscleQuizCanvas" role="img" aria-label="근육 퀴즈의 정상 보행 장면"></canvas><p id="muscleQuizQuestion"></p><div id="muscleQuizChoices" class="toolbar"></div><p id="muscleQuizFeedback" role="status"></p><div class="toolbar"><button id="muscleQuizReveal" type="button" hidden>작용표에서 확인</button><button id="muscleQuizNext" type="button" disabled>다음 문항</button></div></div></details><details id="momentLesson" class="moment-card"><summary>힘의 작용선과 근육 작용</summary><div class="toolbar"><label>관절 <select id="momentJoint"><option value="0">엉덩관절</option><option value="1" selected>무릎관절</option><option value="2">발목관절</option></select></label><button id="momentLoading" type="button">부하반응기</button><button id="momentMid" type="button">중간디딤기</button><button id="momentLate" type="button">말기디딤기</button></div><canvas id="momentCanvas" role="img" aria-label="옆면의 지면반발력 작용선과 관절 중심"></canvas><p id="momentResult"></p><p id="momentRole"></p><small>황색은 지면반발력의 작용선, 보라 점선은 관절 중심에서 작용선까지의 수직 거리입니다. 내장 모형의 시상면 계산입니다. 관절의 전체 순모멘트나 개별 근육 힘을 계산하려면 추가 자료가 필요합니다.</small><p><small><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3838524/">보행 중 외부 모멘트와 근육 기능 참고자료</a></small></p></details><div id="muscleTracks" class="muscle-matrix-wrap"></div><div id="muscleDetail" class="muscle-detail" hidden><strong id="muscleDetailTitle"></strong><p id="muscleDetailAction"></p><p id="muscleDetailRole"></p></div><details class="muscle-clinical"><summary>보행 소견으로 근육 기전 추론하기</summary><label for="muscleCase">관찰 소견</label><select id="muscleCase"><option value="hip">중간디딤기 · 반대쪽 골반 하강</option><option value="drop">중간흔듦기 · 발끝이 낮게 지나감</option><option value="ankle">디딤기 · 정강뼈 전진이 제한됨</option></select><button id="muscleCaseJump" type="button">비교 장면 열기</button><p id="muscleCaseStatus" role="status"></p><dl><dt>관찰할 움직임</dt><dd id="muscleCaseObservation"></dd><dt>가능한 근육 기전</dt><dd id="muscleCaseMechanism"></dd><dt>함께 확인할 항목</dt><dd id="muscleCaseAssessment"></dd></dl><p><small>움직임은 여러 원인으로 나타날 수 있습니다. 이 모형은 관찰과 평가를 연결하는 교육용 예시입니다. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3482409/">보행 소견과 근력 참고자료</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9336011/">발목 구축 참고자료</a></small></p></details><p><span class="mint">동심성</span> · <span class="amber">편심성</span> · <span class="violet">등척성</span></p><small>표의 열은 위 타임라인과 같은 순서입니다. 흰 테두리가 현재 단계이며, 동·편·등은 대표 수축 예시이며, 역은 해당 단계에서 관찰할 기능적 역할을 뜻합니다. 몸통 근육의 단계 표시는 기능을 살펴볼 교육용 관찰 시점입니다. </small><small>정상 보행의 교육용 예시입니다. 등척성에 가까운 안정화 예시는 근육 길이의 직접 측정값과 구분합니다.</small><p><small><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8153502/">볼기근과 넙다리근막긴장근 근활성 자료</a> · <a href="https://physoc.onlinelibrary.wiley.com/doi/full/10.1113/JP285831">보행 중 척추세움근 근활성 자료</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/36557001/">보행 시 몸통 근활성 자료</a></small></p></section></div>
+<section class="card" aria-labelledby="kineticTitle"><h2 id="kineticTitle">압력중심과 지면반발력</h2><p id="kineticSource">정상 보행 교육용 모형 · 기준 다리</p>
+<div class="row">
+<div><h3>COP<br><small>Center of Pressure · 압력중심</small></h3><canvas id="copCanvas" height="240" role="img" aria-label="발바닥 위 압력중심 경로"></canvas><p id="copValue"></p><small>앞뒤 위치는 발꿈치 0%에서 발끝 100%까지 표시합니다. 안가쪽 위치는 발 너비로 정규화합니다.</small></div>
+<div><h3>GRF<br><small>Ground Reaction Force · 지면반발력</small></h3><label>성분 <select id="forceAxis"><option value="all">세 성분</option><option value="0">수직</option><option value="1">앞뒤</option><option value="2">안가쪽</option></select></label><div class="kinetic-key"><span class="mint">수직</span><span class="amber">앞뒤</span><span class="violet">안가쪽</span></div><canvas id="grfCanvas" class="direct-scrub" height="240" tabindex="0" role="slider" aria-label="지면반발력 그래프에서 보행 시점 선택" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></canvas><p id="grfValue"></p><small>단위는 체중 대비 %. 위쪽·앞쪽·가쪽이 양수입니다.</small></div>
+</div><p><small>압력중심은 기준 발이 지면을 누르는 동안에만 표시합니다. 점선은 제공된 전체 경로입니다.</small></p>
+</section><section class="card" id="practice"><h2>관찰 → 해석 → 추가 평가</h2><button id="practiceStart" type="button">이름을 가린 사례 보기</button><button id="practiceExit" type="button" hidden>실습 종료</button><p id="practicePrompt"></p><form id="practiceForm" hidden><div class="practice-fields" id="practiceFields"></div><button type="submit">답 확인</button></form><p id="practiceFeedback" role="status"></p></section><section class="card quiz"><h2>관찰 퀴즈</h2><small id="record"></small><button id="observe">문항의 관찰 장면 보기</button><p id="question"></p><div id="answers"></div><p id="feedback" role="status"></p><button id="next" hidden>다음 문항</button></section>
+<section class="card"><h2>보행 기록 가져오기</h2><div class="toolbar"><input id="file" type="file" accept=".json,application/json" aria-label="보행 기록 파일"><button id="sample">예시 JSON 저장</button><button id="reset">내장 모델 복원</button></div><p id="status" role="status">내장 교육용 모델을 사용 중입니다.</p><details><summary>파일 형식 및 개발 범위</summary><p>JSON의 name과 samples를 입력합니다. 각 표본은 phase(0–100), right와 left(엉덩관절·무릎관절·발목관절의 각도 배열)를 포함하며, 양 끝점과 오름차순의 시점이 필요합니다. events는 7개 단계 경계의 배열이며 생략하면 교육용 기본값을 적용합니다. 기록은 브라우저 메모리에서 재생합니다.</p><p>기존 관절각 JSON을 계속 사용할 수 있습니다. 새 선택 항목은 모두 파일의 공통 0–100% 시간축을 사용합니다.</p><p><code>contacts.right</code> / <code>contacts.left</code>는 <code>[초기접촉%, 발가락떼기%]</code>입니다. 디딤기가 100%에서 0%로 이어지는 경우 발가락떼기 값이 초기접촉 값보다 작습니다. <code>kinetics.right</code> / <code>kinetics.left</code>에는 각각 <code>cop</code>와 <code>grf</code>를 선택적으로 입력할 수 있습니다. <code>cop</code>의 각 행은 <code>[시점%, 발길이%, 발너비%]</code>, <code>grf</code>의 각 행은 <code>[시점%, 수직, 앞뒤, 안가쪽]</code>이며 힘의 단위는 체중 대비 %입니다. 힘 데이터에는 0%와 100% 행을 포함하세요. <code>source</code>에 측정 출처를 입력할 수 있습니다.</p><p>퀴즈 응답 수는 이 브라우저에 저장됩니다. Supabase 인증, Notion 승인 동기화, 실제 계측 장비 스트리밍, GitHub·Vercel 배포는 외부 프로젝트 연결이 필요한 단계입니다.</p><a href="https://www.ouhsc.edu/bserdac/dthompso/web/gait/terms.htm">보행 단계의 영문 기준</a></details></section>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const phases=['초기접촉','부하반응기','중간디딤기','말기디딤기','전흔듦기','초기흔듦기','중간흔듦기','말기흔듦기'];
+const limits=[0,10,30,50,60,73,87];
+const sideNames=['오른쪽','왼쪽'];
+const wrap=p=>(p+100)%100;
+const duration=([start,end])=>wrap(end-start);
+function inContact(pair,p){return pair&&wrap(p-pair[0])<duration(pair);}
+function contactPairs(){
+ if(imported)return imported.contacts;
+ return +$('side').value?[[50,10],[0,60]]:[[0,60],[50,10]];
+}
+let eventsKey='';
+function drawContacts(){
+ const pairs=contactPairs();
+ const key=JSON.stringify([pairs,!!imported]);
+ if(key!==eventsKey){
+  eventsKey=key;
+  const tracks=$('contactTracks'),buttons=$('eventButtons');
+  tracks.replaceChildren();buttons.replaceChildren();
+  for(const [i,pair] of pairs.entries()){
+   if(!pair)continue;
+   const row=document.createElement('div'),label=document.createElement('span'),track=document.createElement('div');
+   row.className='contact-row';track.className='contact-track';label.textContent=sideNames[i];
+   const edges=[...new Set([0,100,...pairs.filter(Boolean).flat()])].sort((a,b)=>a-b);
+   for(let n=1;n<edges.length;n++){
+    const start=edges[n-1],end=edges[n],mid=(start+end)/2;
+    if(!inContact(pair,mid))continue;
+    const segment=document.createElement('span');
+    segment.className='contact-segment'+(inContact(pairs[1-i],mid)?' double':'');
+    segment.style.left=start+'%';segment.style.width=(end-start)+'%';track.append(segment);
+   }
+   const cursor=document.createElement('span');cursor.className='contact-cursor';track.append(cursor);
+   row.append(label,track);tracks.append(row);
+   pair.forEach((p,j)=>{
+    const button=document.createElement('button');button.type='button';
+    button.textContent=sideNames[i]+' '+['초기접촉','발가락떼기'][j]+' '+p+'%';
+    button.onclick=()=>{setPlaying(false);position=p;draw();};buttons.append(button);
+   });
+  }
+  const notes=pairs.flatMap((pair,i)=>pair?[sideNames[i]+' 디딤기 '+duration(pair).toFixed(1)+'% / 흔듦기 '+(100-duration(pair)).toFixed(1)+'%']:[]);
+  $('contactNote').textContent=notes.length?notes.join(' · ')+(notes.length===2?' · 황색은 양발 지지':'')+(imported?' · 파일의 사건':' · 정상 보행 교육용 사건'):'이 파일에 좌우 접촉 사건이 없습니다.';
+ }
+ $('contactTracks').querySelectorAll('.contact-cursor').forEach(cursor=>cursor.style.left=Math.min(position,99.7)+'%');
+}
+const descriptions=['기준 다리의 발이 바닥에 처음 닿는 사건입니다.','체중을 받아들이면서 무릎이 굽혀지고 발이 바닥으로 내려옵니다.','한 다리 지지 상태에서 몸이 지지발 위를 지나갑니다.','지지 다리의 발꿈치가 들리고 몸이 앞쪽으로 이동합니다.','반대발로 체중을 옮기며 기준 다리의 발이 바닥을 떠날 준비를 합니다.','무릎 굽힘과 엉덩관절 굽힘으로 다리를 앞으로 이동시킵니다.','발끝이 바닥에 닿지 않도록 다리를 이동시킵니다.','아래다리 전진을 조절하며 다음 초기접촉을 준비합니다.'];
+const muscleData=[
+['앞정강근','등척성에 가까운 안정화','발목을 중립 부근에 유지하는 예시입니다.', 'violet'],
+['앞정강근','편심성','발 앞부분이 바닥으로 내려가는 속도를 조절합니다.','amber'],
+['가자미근','편심성','발목이 발등굽힘으로 움직일 때 정강뼈의 전진을 조절합니다.','amber'],
+['발바닥굽힘근','동심성 작용 예시','말기디딤기 후반의 추진을 설명하는 단순화된 예시입니다.','mint'],
+['엉덩관절 굽힘근','동심성 작용 예시','디딤기에서 흔듦기로 넘어갈 때 다리 전진을 돕습니다.','mint'],
+['엉덩허리근','동심성','엉덩관절 굽힘을 통해 다리 전진을 돕습니다.','mint'],
+['앞정강근','등척성에 가까운 안정화','발끝 바닥 간격을 유지하는 데 기여합니다.','violet'],
+['뒤넙다리근','편심성','무릎 폄과 넙다리의 전진을 감속하는 데 기여합니다.','amber']
+];
+const caseData=[null,
+['엉덩관절 벌림근 약화','기준 다리로 디디는 동안 반대쪽 골반 하강과 몸통 기울기를 관찰하세요. 엉덩관절 벌림근의 힘과 한 다리 지지 과제를 비교합니다.'],
+['발목관절 발바닥굽힘 구축','디딤기의 발등굽힘 감소와 정강뼈 전진을 관찰하세요. 무릎을 굽혔을 때와 폈을 때 발목 가동범위를 비교합니다.'],
+['뇌졸중 후 편마비','기준 다리 흔듦기에서 무릎 굽힘 감소와 골반 올림, 가쪽 이동을 관찰하세요. 선택적 운동 조절과 가동범위를 함께 확인합니다.'],
+['발처짐','흔듦기의 발바닥굽힘 자세와 이를 보상하는 엉덩관절·무릎관절 굽힘을 관찰하세요. 발등굽힘 근력과 감각을 추가 평가합니다.'],
+['소뇌실조 보행','앞면에서 넓어진 걸음 너비와 몸통의 가쪽 흔들림을 관찰하세요. 옆면에서 예시 주기 A와 B를 바꿔 걸음 간 움직임의 변동을 비교할 수 있습니다.','https://pmc.ncbi.nlm.nih.gov/articles/PMC1738052/'],
+['파킨슨 보행','옆면에서 짧아진 걸음, 줄어든 팔 흔들림과 몸통의 앞으로 굽은 자세를 비교하세요. 직선 보행 모형이며 시작 지연과 회전 중 동결은 재현하지 않습니다.','https://now.aapmr.org/wp-content/uploads/2023/07/Geriatric-Gait-and-Balance-Disorders-Table-1.pdf']];
+const keys=[[0,30,5,0],[10,26,16,-7],[20,12,8,3],[30,0,4,8],[45,-12,6,12],[50,-8,12,7],[60,0,39,-17],[70,18,61,-8],[80,28,33,0],[90,30,13,2],[100,30,5,0]];
+let position=0, playing=false, previous=null, imported=null, scenario=0, ataxicCycle=0;
+function blend(rows,p){
+ const i=rows.findIndex(row=>row[0]>=p);
+ if(i<=0)return rows[i===0?0:rows.length-1].slice(1);
+ const a=rows[i-1],b=rows[i], t=(p-a[0])/(b[0]-a[0]);
+ return a.slice(1).map((value,j)=>value+(b[j+1]-value)*t);
+}
+const modelTangents=new Map();
+function smoothModelSample(rows,p){
+ let slopes=modelTangents.get(rows);
+ if(!slopes){
+  const intervals=rows.slice(1).map((row,i)=>row[0]-rows[i][0]);
+  const rates=intervals.map((span,i)=>rows[i+1].slice(1).map((value,j)=>(value-rows[i][j+1])/span));
+  const harmonic=(left,right,prev,next)=>{
+   if(left*right<=0)return 0;
+   const a=2*next+prev,b=next+2*prev;
+   return (a+b)/(a/left+b/right);
+  };
+  slopes=rows.map((row,i)=>row.slice(1).map((value,j)=>{
+   const last=rows.length-1;
+   if(i===0||i===last){
+    return rows[0][j+1]===rows[last][j+1]
+     ?harmonic(rates.at(-1)[j],rates[0][j],intervals.at(-1),intervals[0])
+     :0;
+   }
+   return harmonic(rates[i-1][j],rates[i][j],intervals[i-1],intervals[i]);
+  }));
+  modelTangents.set(rows,slopes);
+ }
+ const index=rows.findIndex(row=>row[0]>=p);
+ if(index<=0)return rows[index===0?0:rows.length-1].slice(1);
+ const a=rows[index-1],b=rows[index];
+ const span=b[0]-a[0],t=(p-a[0])/span,t2=t*t,t3=t2*t;
+ return a.slice(1).map((value,j)=>
+  (2*t3-3*t2+1)*value+(t3-2*t2+t)*span*slopes[index-1][j]+
+  (-2*t3+3*t2)*b[j+1]+(t3-t2)*span*slopes[index][j]);
+}
+function modelSample(rows,p){
+ return $('motionInterpolation').value==='smooth'?smoothModelSample(rows,p):blend(rows,p);
+}
+function modelBlend(){
+ return imported||practiceActive?1:Number($('modelBlend').value||100)/100;
+}
+function angles(p,side,model){
+ if(model===0&&imported)return blend(imported.rows[side],p);
+ const target=modelAngles(p,side,model);
+ if(!model)return target;
+ const fraction=modelBlend(),normal=modelSample(keys,p);
+ return target.map((value,i)=>normal[i]+(value-normal[i])*fraction);
+}
+function compensationOn(id){
+ return practiceActive||$(id).checked;
+}
+function compensationKey(){
+ return ['compSteppage','compHipHike','compCircumduction'].map(compensationOn).join('|');
+}
+function modelAngles(p,side,model){
+ const [h,k,a]=modelSample(keys,p);
+ const swing=p>=60?Math.sin((p-60)/40*Math.PI):0;
+ if(model===2)return [h,k,a-12*Math.sin(p/100*Math.PI)];
+ if(model===3)return [h,k-32*swing,a-10*swing];
+ if(model===5){
+  const wave=p/100*Math.PI*2;
+  const variation=ataxicCycle===0?1:-1;
+  const asymmetry=side===0?1:-1;
+  return [h+variation*(5*Math.cos(wave)+3*asymmetry*Math.sin(2*wave)),k+variation*4*Math.sin(wave),a+variation*3*Math.sin(2*wave)];
+ }
+ if(model===6)return [h*.56+5,k*.64+4,a*.6];
+ if(model===4){
+  const lift=compensationOn('compSteppage')?swing:0;
+  return [h+12*lift,k+14*lift,a-23*swing];
+ }
+ return [h,k,a];
+}
+function phaseIndex(p,boundaries){
+ if(p===0 || p===100)return 0;
+ return boundaries.reduce((idx,edge,j)=>p>=edge?j+1:idx,0);
+}
+const toeExtensionKeys=[[0,0],[32,0],[42,12],[52,27],[59,32],[60,28],[67,0],[100,0]];
+function toeExtension(p,model){
+ return imported?0:modelSample(toeExtensionKeys,p)[0]*(model?1-modelBlend():1);
+}
+function motionPose(p,model,ref){
+ const rad=Math.PI/180;
+ const cycle=p===100?0:p;
+ const [pelvicPitch,pelvicRoll,pelvicYaw,trunkRoll]=segmentAngles(cycle,model,ref);
+ const pelvicOffset=.15*Math.tan(pelvicRoll*rad);
+ const pelvicTurn=.15*Math.sin(pelvicYaw*rad);
+ const refSign=ref===0?-1:1;
+ const y=.95+.035*Math.sin(cycle/100*Math.PI*4);
+ const wave=cycle/100*Math.PI*2;
+ const lean=-.46*Math.tan(trunkRoll*rad);
+ const trunkForward=model===6?-.015+.165*modelBlend():-.015;
+ const pelvis=[[-refSign*pelvicTurn,y-refSign*pelvicOffset,refSign*.15],[refSign*pelvicTurn,y+refSign*pelvicOffset,-refSign*.15]];
+ const limbs=pelvis.map((hip,i)=>{
+  const t=i===0||(!model&&imported)?p:(p+50)%100;
+  const [hipAngle,kneeAngle,ankleAngle]=angles(t,i===0?ref:1-ref,i===0||model>=5?model:0);
+  const a=hipAngle*rad,b=(hipAngle-kneeAngle)*rad,f=b+ankleAngle*rad;
+  const lateral=(model===5?Math.sign(hip[2])*(.19+.045*Math.cos(t/100*Math.PI*2+ataxicCycle*Math.PI)):model===3&&i===0&&t>60&&compensationOn('compCircumduction')?Math.sign(hip[2])*.24*Math.sin((t-60)/40*Math.PI):0)*(model?modelBlend():1);
+  const knee=[hip[0]+.46*Math.sin(a),hip[1]-.46*Math.cos(a),hip[2]+lateral*.6];
+  const ankle=[knee[0]+.43*Math.sin(b),knee[1]-.43*Math.cos(b),hip[2]+lateral];
+  const footPoint=(distance,drop)=>[
+   ankle[0]+distance*Math.cos(f)+drop*Math.sin(f),
+   ankle[1]+distance*Math.sin(f)-drop*Math.cos(f),
+   ankle[2]
+  ];
+  const ball=footPoint(.13,.055);
+  const extension=toeExtension(t,model)*rad;
+  const toe=extension===0?footPoint(.205,.045):[
+   ball[0]+.075*Math.cos(f+extension)-.010*Math.sin(f+extension),
+   ball[1]+.075*Math.sin(f+extension)+.010*Math.cos(f+extension),
+   ball[2]
+  ];
+  return [hip,knee,ankle,footPoint(-.07,.055),ball,toe];
+ });
+ const groundOffset=Math.min(...limbs.flatMap(limb=>limb.slice(3).map(point=>point[1])));
+ const shoulderTurn=.7*pelvicTurn*(model===6?1-.65*modelBlend():1);
+ const shoulders=[-1,1].map(sign=>[trunkForward+sign*shoulderTurn,y+.44,lean+sign*.24]);
+ return {pelvicPitch,y,wave,lean,trunkForward,pelvis,shoulders,limbs,groundOffset};
+}
+let pinnedPose=null;
+function walkwayStride(model){
+ return model===6?1.15-.48*modelBlend():1.15;
+}
+function walkwayGeometry(p,model,ref){
+ const contactPhases=[0,50];
+ const feet=contactPhases.map((phase,i)=>{
+  const limb=motionPose(phase,model,ref).limbs[i];
+  const heel=limb[3],toe=limb[5];
+  return [(heel[0]+toe[0])/2,(heel[2]+toe[2])/2];
+ });
+ const stride=walkwayStride(model);
+ const offset=stride*p/100;
+ const prints=[];
+ for(let cycle=-3;cycle<=3;cycle++){
+  for(let i=0;i<2;i++){
+   const event=cycle*100+contactPhases[i];
+   const [x,z]=feet[i];
+   const travel=stride*event/100+x-offset;
+   if(Math.abs(travel)<=1.9)prints.push({x:travel,z,side:i,reached:event<=p});
+  }
+ }
+ return {stride,offset,prints};
+}
+function scene(canvas,p,model,view,ref,{thumbnail=false,orthographic=false,fixedWalk=false,exportWidth=0}={}){
+ const rect=exportWidth?{width:exportWidth}:canvas.getBoundingClientRect();
+ if(!rect.width)return;
+ const scale=exportWidth?1:Math.min(devicePixelRatio||1,2),w=rect.width,h=thumbnail?106:fixedWalk?235:orthographic?195:330;
+ canvas.style.height=h+'px';
+ if(canvas.width!==Math.round(w*scale)||canvas.height!==Math.round(h*scale)){
+   canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);
+ }
+ const c=canvas.getContext('2d');c.setTransform(scale,0,0,scale,0,0);c.clearRect(0,0,w,h);
+ const rad=Math.PI/180,heading=view*rad;
+ const elevation=fixedWalk?.23:orthographic?0:Number($('cameraPitch').value||0)*rad;
+ const zoom=thumbnail?Math.min(w/2.1,55):fixedWalk?Math.min(w/2.8,108):orthographic?Math.min(w/1.85,92):Math.min(w/3.4,136)*Number($('sceneZoom').value||1);
+ const guides=!thumbnail&&!fixedWalk&&$('sceneGuides').checked;
+ const rear=Math.abs(view+90)<1e-6,front=Math.abs(view-90)<1e-6;
+ const volumetric=$('sceneStyle').value!=='joint';
+ const progress=fixedWalk?walkwayStride(model)*p/100:0;
+ const depth=([x,,z])=>x*Math.sin(heading)-z*Math.cos(heading);
+ const project=([localX,y,z])=>{
+  const x=localX+progress;
+  return [(fixedWalk?w*.25:w/2)+(x*Math.cos(heading)+z*Math.sin(heading))*zoom,(thumbnail||orthographic||fixedWalk?h-25:292)-y*zoom*Math.cos(elevation)+depth([x,y,z])*zoom*Math.sin(elevation)];
+ };
+ function stroke(points,color,width){
+   c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.beginPath();
+   points.forEach((point,i)=>{const [x,y]=project(point);if(i)c.lineTo(x,y);else c.moveTo(x,y);});c.stroke();
+ }
+ function polygon(points,color){
+   c.fillStyle=color;c.beginPath();
+   points.forEach((point,i)=>{const [x,y]=project(point);if(i)c.lineTo(x,y);else c.moveTo(x,y);});
+   c.closePath();c.fill();
+ }
+ function dot(point,color,r){const [x,y]=project(point);c.fillStyle=color;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+ const walkway=!thumbnail&&!orthographic&&!imported&&$('sceneWalkway').checked;
+ if(fixedWalk){
+  const trackLine=(a,b,color,width=1)=>stroke([a,b].map(([x,y,z])=>[x-progress,y,z]),color,width);
+  [-.48,-.24,0,.24,.48].forEach(z=>trackLine([-.54,0,z],[1.88,0,z],'#29425c'));
+  for(let n=0;n<=7;n++){
+   const x=n*.24;
+   trackLine([x,0,-.5],[x,0,.5],n===0?'#5edbc7':'#405a72',n===0?3:1);
+  }
+  const [startX,startY]=project([-progress,0,-.50]);
+  c.fillStyle='#95dcdb';c.font='12px system-ui';c.fillText('출발선',Math.max(5,startX-19),startY+18);
+ }else if(walkway){
+  const {stride,offset,prints}=walkwayGeometry(p,model,ref);
+  const step=stride/4,first=Math.floor((offset-1.9)/step);
+  for(let n=first;n*step-offset<1.9;n++){
+   const x=n*step-offset;
+   stroke([[x,0,-.73],[x,0,.73]],n%4===0?'#38566f':'#22394f',1);
+  }
+  [-.72,-.48,0,.48,.72].forEach(z=>stroke([[-1.9,0,z],[1.9,0,z]],z===0?'#466580':'#233c54',1));
+  prints.forEach(({x,z,side,reached})=>{
+   const color=side===0?(reached?'#318c83':'#214e52'):(reached?'#58759a':'#2d4562');
+   const outline=[[-.126,-.025],[-.141,.014],[-.078,.036],[.055,.044],[.126,.022],[.139,-.012],[.089,-.041],[-.047,-.033]];
+   polygon(outline.map(([dx,dz])=>[x+dx,0,z+dz]),color);
+   stroke([[x-.1,0,z],[x+.105,0,z]],reached?'#a8ccdc':'#536c84',1);
+  });
+ }else{
+  for(let i=-5;i<=5;i++){
+   stroke([[-1.7,0,i*.17],[1.7,0,i*.17]],'#22384c',1);
+   stroke([[i*.32,0,-.85],[i*.32,0,.85]],'#22384c',1);
+  }
+ }
+ const {pelvicPitch,y,wave,lean,trunkForward,pelvis,shoulders,limbs,groundOffset}=motionPose(p,model,ref);
+ const grounded=([x,y,z])=>[x,y-groundOffset,z];
+ const onGround=([x,,z])=>[x,0,z];
+ const bodyStroke=(points,color,width)=>stroke(points.map(grounded),color,width);
+ const chest=[trunkForward,y+.46,lean],head=[model===6?trunkForward+.06*modelBlend():trunkForward,y+.68,lean];
+ const waist=[0,y+.12,lean*.25];
+ const pairs=contactPairs();
+ if(!thumbnail&&!fixedWalk&&$('sceneTrail').checked&&pairs[ref]){
+  const [initial,toeOff]=pairs[ref];
+  const length=wrap(initial-toeOff);
+  const trail=Array.from({length:41},(_,i)=>{
+   const sample=motionPose(wrap(toeOff+length*i/40),model,ref);
+   const [x,y,z]=sample.limbs[0][5];
+   return [x,y-sample.groundOffset,z];
+  });
+  const color=model?'#ffcc74':'#52e5cd';
+  c.setLineDash([4,5]);stroke(trail,color,2);c.setLineDash([]);
+  dot(trail[0],color,3);dot(trail.at(-1),color,3);
+  if(!inContact(pairs[ref],p))dot(grounded(limbs[0][5]),color,6);
+ }
+ limbs.forEach((limb,i)=>{
+  if(!guides||!inContact(pairs[i===0?ref:1-ref],p))return;
+  const [, , ,heel,ball,toe]=limb;
+  const color=i===0?(model?'#ffcc74':'#52e5cd'):'#819bb3';
+  const t=wrap(p-pairs[i===0?ref:1-ref][0]);
+  const contact=!imported&&t<5?heel:(!imported&&t>=48)?ball:heel.map((v,n)=>(v+toe[n])/2);
+  dot(onGround(contact),color,5);
+ });
+ function drawPoseOutline(pose,color,dash){
+  const level=([x,y,z])=>[x,y-pose.groundOffset,z];
+  const {limbs,pelvis,y,lean,trunkForward}=pose;
+  c.setLineDash(dash);
+  limbs.forEach(limb=>stroke(limb.map(level),color,3));
+  stroke(pelvis.map(level),color,3);
+  stroke([[0,y,0],[trunkForward,y+.46,lean],[trunkForward,y+.68,lean]].map(level),color,3);
+  c.setLineDash([]);
+ }
+ const showDifferences=!thumbnail&&!fixedWalk&&model!==0&&$('sceneDifferences').checked;
+ const liveOverlay=!thumbnail&&!fixedWalk&&model!==0&&($('sceneOverlay').checked||showDifferences);
+ const order=[0,1].sort((l,r)=>depth(limbs[l][0])-depth(limbs[r][0]));
+ function bodySegment(start,end,from,to,palette){
+  const vector=end.map((value,i)=>value-start[i]);
+  const magnitude=Math.hypot(...vector);
+  if(magnitude<1e-6)return;
+  const [ax,ay,az]=vector.map(value=>value/magnitude);
+  // The side axis stays as close to anatomical left/right as the segment allows.
+  const sideLength=Math.hypot(ax,ay);
+  const front=sideLength>1e-6?[ay/sideLength,-ax/sideLength,0]:[1,0,0];
+  const side=[ay*front[2]-az*front[1],az*front[0]-ax*front[2],ax*front[1]-ay*front[0]];
+  const count=8;
+  const ring=(point,radii)=>Array.from({length:count},(_,i)=>{
+   const angle=i*2*Math.PI/count;
+   return point.map((value,j)=>value+front[j]*radii[0]*Math.cos(angle)+side[j]*radii[1]*Math.sin(angle));
+  });
+  const a=ring(start,from),b=ring(end,to);
+  const faces=a.map((point,i)=>{
+   const next=(i+1)%count;
+   const points=[point,a[next],b[next],b[i]];
+   return {points,depth:points.reduce((sum,p)=>sum+depth(p),0)/points.length,color:palette[i%palette.length]};
+  });
+  faces.push({points:a,depth:depth(start),color:palette[1]},{points:b,depth:depth(end),color:palette[1]});
+  faces.sort((a,b)=>a.depth-b.depth).forEach(({points,color})=>polygon(points.map(grounded),color));
+ }
+ const referencePalette=model?['#a86124','#dc944a','#f8c475','#ce8a3c']:['#237c79','#3fb9ac','#7de4d2','#329e98'];
+ const farPalette=['#405671','#577591','#89a3bb','#627b99'];
+ const torsoPalette=['#455b75','#64829e','#96b5cb','#54738e'];
+ function drawLimb(i){
+  const [hip,knee,ankle,heel,ball,toe]=limbs[i];
+  const color=i===0?(model?'#ffcc74':'#52e5cd'):'#7893ad';
+  if(volumetric){
+   const palette=i===0?referencePalette:farPalette;
+   bodySegment(hip,knee,[.089,.079],[.048,.049],palette);
+   bodySegment(knee,ankle,[.054,.048],[.027,.029],palette);
+   const upperBall=[ball[0],ball[1]+.033,ball[2]];
+   bodySegment(heel,upperBall,[.026,.044],[.03,.043],palette);
+   bodySegment(upperBall,toe,[.023,.043],[.013,.030],palette);
+  }else{
+   bodyStroke([hip,knee],color,12);
+   bodyStroke([knee,ankle],color,9);
+   bodyStroke([ankle,heel,ball,toe],color,6);
+  }
+  if(guides)[hip,knee,ankle,heel,toe].forEach(point=>dot(grounded(point),'#eef7ff',3.5));
+  const sign=Math.sign(hip[2]),shoulder=shoulders[sign===-1?0:1];
+  const armWave=(model===6?1-.82*modelBlend():1)*.48*Math.cos(wave)*(i===0?-1:1);
+  const elbow=[shoulder[0]+.24*Math.sin(armWave),shoulder[1]-.24*Math.cos(armWave),shoulder[2]+sign*.025];
+  const wrist=[elbow[0]+.23*Math.sin(armWave+.27),elbow[1]-.23*Math.cos(armWave+.27),elbow[2]];
+  if(volumetric){
+   bodySegment(shoulder,elbow,[.055,.053],[.031,.033],torsoPalette);
+   bodySegment(elbow,wrist,[.037,.035],[.019,.024],torsoPalette);
+  }else bodyStroke([shoulder,elbow,wrist],'#93acc2',7);
+  if(guides)dot(grounded(elbow),'#d5e6f5',3);
+ }
+ if(!thumbnail&&!fixedWalk&&!orthographic&&$('sceneGhosts').checked){
+  const spacing=Number($('ghostSpacing').value);
+  const samples=[[-2,'#456d9f'],[2,'#a65380'],[-1,'#75aeef'],[1,'#ed8ebd']];
+  samples.forEach(([offset,color])=>{
+   const sample=p+offset*spacing;
+   if(sample>=0&&sample<=100)drawPoseOutline(motionPose(sample,model,ref),color,[3,5]);
+  });
+ }
+ drawLimb(order[0]);
+ if(volumetric){
+  const collar=[chest[0],chest[1]+.025,chest[2]];
+  bodySegment([0,y-.038,0],waist,[.106,.158],[.095,.128],torsoPalette);
+  bodySegment(waist,collar,[.096,.127],[.12,.205],torsoPalette);
+  bodySegment(collar,head,[.047,.054],[.048,.050],torsoPalette);
+  if(guides){bodyStroke(shoulders,'#e5edf7',2);bodyStroke(pelvis,'#e5edf7',2);}
+ }else{
+  polygon([...shoulders,[waist[0],waist[1],waist[2]+.11],[waist[0],waist[1],waist[2]-.11]].map(grounded),'#365772');
+  bodyStroke([[0,y,0],waist,chest,head],'#bcd1e5',8);
+  bodyStroke(shoulders,'#bcd1e5',7);
+  bodyStroke(pelvis,'#eaf7ff',10);
+ }
+ if((!volumetric||guides)&&(!imported||model)){
+  const pitch=pelvicPitch*rad;
+  bodyStroke([[0,y,0],[.20*Math.cos(pitch),y-.20*Math.sin(pitch),0]],'#eaf7ff',4);
+ }
+ if(volumetric){
+  const [hx,hy]=project(grounded(head));
+  c.fillStyle='#c4d9e9';c.beginPath();c.ellipse(hx,hy,zoom*.072,zoom*.098,0,0,2*Math.PI);c.fill();
+ }else dot(grounded(head),'#eaf7ff',12);
+ drawLimb(order[1]);
+ if(!thumbnail&&(rear||front)){
+  c.font='13px system-ui';c.fillStyle='#b9d3e6';
+  c.fillText(rear?'왼쪽':'오른쪽',10,20);
+  const label=rear?'오른쪽':'왼쪽';
+  c.fillText(label,w-10-c.measureText(label).width,20);
+ }
+
+ if(!thumbnail&&!fixedWalk&&!imported&&$('showToeClearance').checked&&p>=60&&p<=100){
+  const toe=grounded(limbs[0][5]);
+  const ground=[toe[0],0,toe[2]],color=model?'#ffcc74':'#52e5cd';
+  c.setLineDash([3,3]);stroke([ground,toe],color,2);c.setLineDash([]);
+  dot(ground,color,3);dot(toe,color,4);
+ }
+ if(!thumbnail&&!fixedWalk&&!model&&!imported&&$('sceneMuscle').value){
+  const selected=Number($('sceneMuscle').value)-1;
+  const range=muscleMarker(selected,limbs[0],waist,chest);
+  if(range){
+   const phase=phaseIndex(p,limits);
+   const hasRole=tracks[selected][1].split(' ')[phase]!=='-';
+   const color=hasRole?'#e8b9ff':'#aca7c6';
+   if(!hasRole)c.setLineDash([4,4]);
+   bodyStroke(range,color,hasRole?8:4);
+   c.setLineDash([]);
+   dot(grounded(range[0]),color,4);
+  }
+ }
+ if(!thumbnail&&!fixedWalk&&!model&&$('sceneForce').checked){
+  const {cop,force}=sceneKinetics(p,ref);
+  if(cop){
+   const [ap,ml]=cop,heel=limbs[0][3],toe=limbs[0][5];
+   const start=[heel[0]+(toe[0]-heel[0])*ap/100,0,heel[2]+(ref===0?-1:1)*ml*.001];
+   if(force){
+    const axis=$('sceneForceAxis').value;
+    const [vertical,forward,lateral]=force;
+    const all=axis==='resultant',factor=.0045;
+    const end=[start[0]+(all||axis==='forward'?forward*factor:0),
+     (all||axis==='vertical'?vertical*factor:0),
+     start[2]+(all||axis==='lateral'?lateral*factor*(ref===0?-1:1):0)];
+    const [x0,y0]=project(start),[x1,y1]=project(end);
+    const length=Math.hypot(x1-x0,y1-y0);
+    if(length>=4){
+     drawLine(c,[[x0,y0],[x1,y1]],'#ffd369',3);
+     const direction=Math.atan2(y1-y0,x1-x0),tip=Math.min(10,length*.65);
+     drawLine(c,[[x1-tip*Math.cos(direction-.52),y1-tip*Math.sin(direction-.52)],[x1,y1],[x1-tip*Math.cos(direction+.52),y1-tip*Math.sin(direction+.52)]],'#ffd369',3);
+    }
+   }
+   dot(start,'#0a1929',7);dot(start,'#52e5cd',4.5);
+  }
+ }
+ if(liveOverlay){
+  const reference=motionPose(p,0,ref);
+  drawPoseOutline(reference,'#52e5cd',[4,4]);
+  if(showDifferences){
+   const color='#dfb5ff';
+   reference.limbs[0].slice(0,3).forEach(([x,y,z],i)=>{
+    const [x0,y0]=project([x,y-reference.groundOffset,z]);
+    const joint=grounded(limbs[0][i]);
+    const [x1,y1]=project(joint);
+    const length=Math.hypot(x1-x0,y1-y0);
+    if(length>=6){
+     const angle=Math.atan2(y1-y0,x1-x0),tip=Math.min(8,length*.6);
+     drawLine(c,[[x0,y0],[x1,y1]],color,2);
+     drawLine(c,[[x1-tip*Math.cos(angle-.5),y1-tip*Math.sin(angle-.5)],[x1,y1],[x1-tip*Math.cos(angle+.5),y1-tip*Math.sin(angle+.5)]],color,2);
+    }
+    dot(joint,color,3);
+   });
+  }
+ }
+ if(!thumbnail&&!fixedWalk&&pinnedPose)drawPoseOutline(pinnedPose.pose,'#cbb0ff',[8,4]);
+ if(!thumbnail&&!fixedWalk&&(!orthographic||w>=235)&&$('sceneAngles').checked){
+  const names=['엉덩관절','무릎관절','발목관절'];
+  const data=angles(p,ref,model);
+  const points=limbs[0].slice(0,3).map(point=>project(grounded(point)));
+  c.font='12px system-ui';
+  const labelWidth=105,labelHeight=22;
+  let previousY=-30;
+  points.map(([x,y],i)=>({x,y,i})).sort((a,b)=>a.y-b.y).forEach(({x,y,i})=>{
+   const labelX=Math.max(4,Math.min(w-labelWidth-4,x+(x>w/2?-labelWidth-14:14)));
+   const labelY=Math.min(h-28,Math.max(4,y-11,previousY+25));
+   previousY=labelY;
+   const color=model?'#ffcc74':'#52e5cd';
+   drawLine(c,[[x,y],[labelX+(x>labelX?labelWidth:0),labelY+labelHeight/2]],color,1);
+   c.fillStyle='#0b1b2e';c.fillRect(labelX,labelY,labelWidth,labelHeight);
+   c.fillStyle=color;c.fillText(names[i]+' '+data[i].toFixed(1)+'°',labelX+5,labelY+15);
+  });
+ }
+ if(!thumbnail&&!fixedWalk&&model===0&&!imported&&!$('sceneMuscle').value){
+   const color={mint:'#52e5cd',amber:'#ffcc74',violet:'#cbb0ff'}[muscleData[phaseIndex(p,limits)][3]];
+   const segment=[0,1,2,6].includes(phaseIndex(p,limits))?2:1;
+   const start=limbs[0][segment-1],end=limbs[0][segment];
+   bodyStroke([start.map((a,i)=>.25*end[i]+.75*a+.04*(i===2)),start.map((a,i)=>.7*end[i]+.3*a+.04*(i===2))],color,4);
+ }
+}
+// Illustrative single-foot kinetics, normalized to body weight and foot dimensions.
+const forces=[[0,0,0,0],[4,51,-8,1],[12,108,-17,-4],[20,101,-10,-5],[30,79,0,-4],[40,101,12,-2],[47,111,18,1],[54,60,11,2],[60,0,0,0],[100,0,0,0]];
+const pressurePath=[[0,7,-5],[8,18,15],[20,40,20],[34,64,13],[47,79,-11],[55,89,-24],[60,95,-25]];
+const forceColors=['#52e5cd','#ffcc74','#cbb0ff'];
+const forceLabels=['수직','앞뒤','안가쪽'];
+function prepareCanvas(canvas,height){
+ const width=canvas.getBoundingClientRect().width;
+ if(!width)return null;
+ const ratio=Math.min(devicePixelRatio||1,2);
+ canvas.style.height=height+'px';
+ const dw=Math.round(width*ratio),dh=Math.round(height*ratio);
+ if(canvas.width!==dw||canvas.height!==dh){canvas.width=dw;canvas.height=dh;}
+ const context=canvas.getContext('2d');
+ context.setTransform(ratio,0,0,ratio,0,0);context.clearRect(0,0,width,height);
+ context.font='13px system-ui';context.fillStyle='#adc1d6';
+ return {context,width,height};
+}
+function drawLine(c,points,color,lineWidth=1,dash=[]){
+ c.strokeStyle=color;c.lineWidth=lineWidth;c.setLineDash(dash);c.beginPath();
+ points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();c.setLineDash([]);
+}
+function marker(c,x,y,color){
+ c.fillStyle=color;c.beginPath();c.arc(x,y,4.5,0,Math.PI*2);c.fill();
+}
+function sceneKinetics(p,side){
+ const phase=p===100?0:p;
+ const pair=contactPairs()[side];
+ const pressure=imported?imported.kinetics[side]?.cop:pressurePath;
+ const forcesForSide=imported?imported.kinetics[side]?.grf:forces;
+ const force=forcesForSide?blend(forcesForSide,imported?p:phase):null;
+ const hasPressure=pressure&&(!pair||inContact(pair,phase))&&phase>=pressure[0][0]&&phase<=pressure.at(-1)[0];
+ const cop=hasPressure&&(force?force[0]>0:!!imported)?blend(pressure,phase):null;
+ return {cop,force,pressure};
+}
+function drawKinetics(){
+ const cop=prepareCanvas($('copCanvas'),240),grf=prepareCanvas($('grfCanvas'),240);
+ if(!cop||!grf)return;
+ const side=+$('side').value;
+ const pair=contactPairs()[side];
+ const pressure=imported?imported.kinetics[side]?.cop:pressurePath;
+ const force=imported?imported.kinetics[side]?.grf:forces;
+ $('kineticSource').textContent=(imported?'가져온 기록 · '+(imported.source||'출처 미기재'):'정상 보행 교육용 모형')+' · '+sideNames[side]+' 기준 다리';
+ if(!pressure){cop.context.fillText('압력중심 자료 없음',14,35);$('copValue').textContent='자료 없음';}
+ if(!force){grf.context.fillText('지면반발력 자료 없음',14,35);$('grfValue').textContent='자료 없음';}
+ if(pressure){
+ const c=cop.context;
+ const x=(lateral)=>cop.width/2+lateral*(side?-1:1)*Math.min(1.45,cop.width/250);
+ const y=(forward)=>216-forward*1.93;
+ const outline=[[5,42],[3,57],[11,70],[30,74],[55,57],[76,63],[91,65],[99,48],[100,30],[91,20],[77,14],[63,25],[48,33],[26,31],[9,32],[5,42]];
+ drawLine(c,outline.map(([forward,width])=>[x(width-42),y(forward)]),'#7093ae',2);
+ c.fillStyle='#adc1d6';c.fillText('발끝',12,24);c.fillText('발꿈치',12,220);
+ c.fillText(side?'가쪽':'안쪽',12,115);c.fillText(side?'안쪽':'가쪽',cop.width-41,115);
+ const pathPoints=pressure.map(([,ap,ml])=>[x(ml),y(ap)]);
+ drawLine(c,pathPoints,'#639eaa',2,[4,5]);
+ if(position>=pressure[0][0]&&position<=pressure.at(-1)[0]&&(imported?(!pair||inContact(pair,position)):position>0&&position<60)){
+  const [ap,ml]=blend(pressure,position);
+  const traversed=pathPoints.filter((_,i)=>pressure[i][0]<position);
+  drawLine(c,[...traversed,[x(ml),y(ap)]],forceColors[0],3);
+  marker(c,x(ml),y(ap),'#fff');
+  $('copValue').textContent='앞뒤 '+ap.toFixed(0)+'% · '+(ml<0?'안쪽 ':'가쪽 ')+Math.abs(ml).toFixed(0)+'%';
+ }else{
+  $('copValue').textContent=pair&&!inContact(pair,position)?'흔듦기 · 기준 발의 압력중심 없음':'현재 시점에 표시할 압력중심 위치가 없습니다.';
+ }
+ }
+ if(!force)return;
+ const g=grf.context,w=grf.width;
+ const axis=$('forceAxis').value;
+ const selected=axis==='all'?[0,1,2]:[Number(axis)];
+ const extents=force.flatMap(row=>selected.map(i=>row[i+1]));
+ const bottom=Math.min(axis==='0'?0:axis==='2'?-6:-20,...extents),top=Math.max(axis==='2'?6:axis==='1'?20:120,...extents);
+ const gx=p=>plotX(p,w,forceAxisInsets),gy=v=>13+(top-v)*193/(top-bottom);
+ g.fillStyle='#142d42';
+ if(pair){
+  const [a,b]=pair;
+  const intervals=a<b?[[a,b]]:[[0,b],[a,100]];
+  intervals.forEach(([start,end])=>g.fillRect(gx(start),13,gx(end)-gx(start),193));
+ }
+ for(const value of new Set([bottom,0,top])){
+  drawLine(g,[[gx(0),gy(value)],[gx(100),gy(value)]],'#39566d');g.fillStyle='#adc1d6';g.fillText(Number(value.toFixed(1)).toString(),5,gy(value)+4);
+ }
+ [0,20,40,60,80,100].forEach(p=>g.fillText(p+'%',gx(p)-12,228));
+ selected.forEach(i=>drawLine(g,force.map(row=>[gx(row[0]),gy(row[i+1])]),forceColors[i],2.5));
+ drawLine(g,[[gx(position),13],[gx(position),206]],'#eaf7ff');
+ const values=blend(force,position);
+ selected.forEach(i=>marker(g,gx(position),gy(values[i]),forceColors[i]));
+ $('grfValue').textContent=selected.map(i=>forceLabels[i]+' '+values[i].toFixed(1)+'%').join(' · ');
+}
+// Teaching cues for functional roles, independent of measured activation timing.
+const trunkMuscleRoles=[
+ {name:'배곧은근', roles:{
+  1:'부하를 받아들일 때 복벽 긴장과 몸통의 앞뒤 방향 안정화에 기여합니다.',
+  4:'체중을 반대 다리로 옮길 때 복벽의 긴장을 유지하는 데 기여합니다.'
+ }},
+ {name:'허리네모근', roles:{
+  2:'한 다리로 지지할 때 몸통의 가쪽 기울기와 골반 높이 조절에 관여합니다.',
+  5:'흔듦기 초기에 몸통과 골반의 가쪽 정렬을 조절하는 역할을 관찰할 수 있습니다.'
+ }},
+ {name:'척추 안정화근', roles:{
+  1:'뭇갈래근과 배가로근을 예로 들어, 체중을 받아들일 때 허리 분절과 몸통의 안정화에 어떻게 기여하는지 살펴봅니다.',
+  2:'한 다리로 지지하는 동안 허리 분절과 골반의 자세를 조절하는 데 기여합니다.',
+  4:'지지 다리가 바뀔 때 몸통과 허리 분절의 안정화에 기여합니다.'
+ }},
+ {name:'배바깥빗근', roles:{
+  1:'반대쪽 배속빗근과 함께 몸통의 돌림을 조절합니다.',
+  4:'체중을 반대 다리로 옮길 때 가슴우리와 골반 사이의 상대적인 돌림을 조절합니다.'
+ }},
+ {name:'배속빗근', roles:{
+  1:'반대쪽 배바깥빗근과 함께 몸통의 돌림을 조절합니다.',
+  4:'체중을 반대 다리로 옮길 때 복벽 긴장과 몸통 돌림 조절에 기여합니다.'
+ }}
+];
+const tracks=[
+ ['앞정강근','I E - - - C I -'],
+ ['가자미근','- - E C - - - -'],
+ ['엉덩허리근','- - - - C C - -'],
+ ['뒤넙다리근','- - - - - - - E'],
+ ['큰볼기근','R R - - - - - R'],
+ ['척추세움근','R R - - R - - -'],
+ ['중간볼기근','R R R - - - - -'],
+ ['넙다리근막긴장근','- R R - - - - -'],
+ ...trunkMuscleRoles.map(({name,roles})=>[name,phases.map((_,i)=>roles[i]?'R':'-').join(' ')]),
+ ['넙다리네갈래근','R E R - - - - -'],
+ ['장딴지근','- - R R R - - -']
+];
+tracks.forEach(([name],i)=>{
+ const option=document.createElement('option');
+ option.value=String(i+1);option.textContent=name;
+ $('sceneMuscle').append(option);
+});
+function muscleMarker(index,[hip,knee,ankle],waist,chest){
+ const offset=(p,x,z)=>[p[0]+x,p[1],p[2]+z];
+ const between=(a,b,t)=>a.map((value,i)=>value+(b[i]-value)*t);
+ const side=Math.sign(hip[2]);
+ const thigh=between(hip,knee,.38),legMid=between(knee,ankle,.4),legLow=between(knee,ankle,.85);
+ const upperWaist=between(waist,chest,.45);
+ const locations=[
+  [offset(legMid,.040,side*.028),offset(legLow,.027,side*.023)],
+  [offset(legMid,-.041,side*.018),offset(legLow,-.039,side*.015)],
+  [offset(waist,.048,side*.075),offset(between(hip,thigh,.6),.045,0)],
+  [offset(between(hip,thigh,.35),-.047,side*.023),offset(between(thigh,knee,.8),-.036,side*.018)],
+  [offset(hip,-.077,side*.033),offset(between(hip,thigh,.60),-.047,side*.035)],
+  [offset(chest,-.067,side*.053),offset(waist,-.064,side*.048)],
+  [offset(between(waist,hip,.73),-.018,side*.073),offset(hip,.002,side*.061)],
+  [offset(hip,.061,side*.048),offset(thigh,.045,side*.052)],
+  [offset(upperWaist,.074,side*.039),offset(waist,.075,side*.039)],
+  [offset(upperWaist,-.04,side*.104),offset(waist,-.04,side*.098)],
+  [offset(upperWaist,-.027,side*.022),offset(waist,-.027,side*.022)],
+  [offset(upperWaist,.041,side*.149),offset(waist,.068,side*.053)],
+  [offset(upperWaist,.061,side*.065),offset(waist,.036,side*.134)],
+  [offset(between(hip,knee,.23),.055,side*.023),offset(between(hip,knee,.83),.033,side*.022)],
+  [offset(between(knee,ankle,.19),-.067,side*.033),offset(between(knee,ankle,.63),-.052,side*.026)]
+ ];
+ return locations[index];
+}
+const actions={R:['역','기능적 역할',''],I:['등','등척성에 가까운 안정화','violet'],E:['편','편심성','amber'],C:['동','동심성','mint'],'-':['·','대표 작용 표시 없음','']};
+const muscleHeaders=['초기','부하','중간딛기','말기딛기','전흔듦','초기흔듦','중간흔듦','말기흔듦'];
+$('muscleTracks').innerHTML='<table class="muscle-matrix" aria-label="정상 보행 단계별 대표 근육 작용"><thead><tr><th scope="col">근육</th>'
+ +muscleHeaders.map((label,i)=>'<th scope="col" title="'+phases[i]+'">'+label+'</th>').join('')
+ +'</tr></thead><tbody>'+tracks.map(([name,sequence],index)=>'<tr><th scope="row">'+name+'</th>'
+ +sequence.split(' ').map((code,i)=>{
+  const [letter,type,color]=actions[code];
+  return '<td><button type="button" class="muscle-cell '+color+'" data-phase="'+i+'" data-muscle="'+(index+1)+'" aria-pressed="false" title="'+type+'" aria-label="'+name+' · '+phases[i]+' · '+type+'">'+letter+'</button></td>';
+ }).join('')+'</tr>').join('')+'</tbody></table>';
+const detailedMuscleRoles={
+ '앞정강근':{0:'발목을 중립 가까이에 유지해 발꿈치 접촉을 준비합니다.',1:'발바닥굽힘을 제어해 발 앞부분이 바닥으로 급히 떨어지는 것을 줄입니다.',5:'발등굽힘으로 발끝이 바닥에 끌리지 않도록 돕습니다.',6:'발끝이 바닥을 지나가는 동안 발목 자세를 유지하는 데 기여합니다.'},
+ '가자미근':{2:'발이 바닥에 놓인 상태에서 정강뼈의 전진과 발등굽힘 진행을 제어합니다.',3:'발목의 발바닥굽힘 힘으로 앞발을 통한 추진에 기여합니다. 근육·힘줄의 실제 길이 변화는 보행 조건에 따라 달라질 수 있습니다.'},
+ '엉덩허리근':{4:'디딤기에서 흔듦기로 넘어갈 때 넙다리를 앞으로 보내는 데 기여합니다.',5:'엉덩관절을 굽혀 흔듦기 초기에 넙다리를 앞으로 이동시킵니다.'},
+ '뒤넙다리근':{7:'넙다리의 전진과 무릎이 펴지는 속도를 늦춰 다음 초기접촉을 준비합니다.'},
+ '넙다리네갈래근':{0:'무릎이 체중을 받을 준비를 하도록 무릎관절의 안정화에 기여합니다.',1:'무릎이 굽혀지는 동안 폄 방향의 힘을 내어 체중을 천천히 받아들입니다.',2:'디딤 다리의 무릎을 지지합니다. 필요한 근육 활동은 자세와 무릎에 작용하는 외부 힘에 따라 달라집니다.'},
+ '장딴지근':{2:'가자미근과 함께 발등굽힘과 정강뼈 전진을 조절하는 데 기여합니다.',3:'발꿈치가 들린 뒤 앞발을 통한 발바닥굽힘과 추진에 기여합니다.',4:'발가락떼기 전 발목의 힘을 전달하는 데 기여합니다. 두 관절을 지나므로 무릎 자세도 함께 살펴봅니다.'}
+};
+function muscleRole(name,phase){
+ return detailedMuscleRoles[name]?.[phase]
+  ||phaseMuscleRoles[phase].find(line=>line.startsWith(name+' — '))?.slice(name.length+3)
+  ||trunkMuscleRoles.find(muscle=>muscle.name===name)?.roles[phase]
+  ||(muscleData[phase][0]===name?muscleData[phase][2]:'');
+}
+const phaseMuscleRoles=[
+ ['큰볼기근 — 발이 닿을 때 엉덩관절 굽힘을 제어할 준비를 합니다.','척추세움근 — 발 접촉 전후 몸통 자세 조절에 기여합니다.','중간볼기근 — 기준 다리에 체중이 실리기 전에 골반의 가쪽 안정화에 기여합니다.'],
+ ['큰볼기근 — 체중을 받아들일 때 엉덩관절과 몸통의 과도한 굽힘을 제어하는 데 기여합니다.','척추세움근 — 체중을 받아들일 때 몸통의 앞쪽 기울어짐을 조절하는 데 기여합니다.','중간볼기근 — 지지 다리 반대쪽 골반의 하강을 조절합니다.','넙다리근막긴장근 — 중간볼기근과 함께 엉덩관절의 가쪽 안정화에 기여합니다.'],
+ ['중간볼기근 — 한 다리로 지지하는 동안 반대쪽 골반 하강을 조절합니다.','넙다리근막긴장근 — 엉덩관절 벌림근과 함께 지지 쪽 골반 안정화에 기여합니다.'],
+ [],
+ ['척추세움근 — 반대발의 초기접촉에 이어 체중이 이동하는 동안 몸통 자세 조절에 기여합니다.'],
+ [],
+ [],
+ ['큰볼기근 — 엉덩관절 굽힘과 넙다리 전진을 감속하는 데 기여하며 다음 접촉을 준비합니다.']
+];
+let shownMuscleRolePhase=-1;
+const muscleCells=[...$('muscleTracks').querySelectorAll('[data-phase]')];
+muscleCells.forEach(cell=>{
+ cell.onclick=()=>{
+  $('sceneMuscle').value=cell.dataset.muscle;
+  phaseButtons[Number(cell.dataset.phase)].onclick();
+ };
+});
+$('forceAxis').onchange=drawKinetics;
+const axialAngles={
+ 3:{
+  label:'허리관절 · 골반 기준 허리 분절 굽힘·폄',
+  direction:'+ 굽힘 / − 폄',
+  scale:4,
+  samples:[[0,.7],[10,2.5],[25,.6],[40,-1.6],[50,.7],[60,2.5],[75,.6],[90,-1.6],[100,.7]]
+ },
+ 4:{
+  label:'엉치엉덩관절 · 기준 다리 쪽 엉덩뼈에 대한 엉치뼈 기울임',
+  direction:'+ 앞기울임(nutation) / − 뒤기울임(counternutation)',
+  scale:1,
+  samples:[[0,0],[12,.35],[28,.55],[44,.25],[60,0],[73,-.2],[88,-.1],[100,0]]
+ }
+};
+const segmentLabels=['골반의 앞뒤 기울기','골반의 가쪽 기울기','골반의 돌림','몸통의 가쪽 기울기'];
+const segmentDirections=['+ 앞기울기 / − 뒤기울기','+ 오른쪽 골반이 높음 / − 왼쪽 골반이 높음','+ 오른쪽 엉덩뼈가 앞섬 / − 왼쪽 엉덩뼈가 앞섬','+ 몸통이 오른쪽으로 기울어짐 / − 왼쪽으로 기울어짐'];
+function segmentAngles(p,model,ref){
+ const wave=p/100*2*Math.PI,refSign=ref===0?-1:1;
+ const multiplier=model?modelBlend():1;
+ const tilt=(model===1?.095*Math.sin(Math.PI*Math.min(p,60)/60):model===3&&p>60&&compensationOn('compHipHike')?.09*Math.sin((p-60)/40*Math.PI):0)*multiplier;
+ const lean=model===1?tilt*1.65*refSign:model===5?(.11*Math.sin(wave)+.045*Math.sin(2*wave+ataxicCycle*Math.PI))*multiplier:0;
+ return [8+2*Math.sin(2*wave),
+  -refSign*(3*Math.sin(wave)+Math.atan2(tilt,.15)*180/Math.PI),
+  refSign*4*Math.cos(wave),
+  -Math.atan2(lean,.46)*180/Math.PI];
+}
+function graph(){
+ const plot=prepareCanvas($('chart'),210);
+ if(!plot)return;
+ const {context:c,width:w,height:h}=plot;
+ const j=+$('joint').value,side=+$('side').value,axial=axialAngles[j], segment=j>=5;
+ if((axial||segment)&&imported){
+  $('values').textContent='자료 없음';
+  $('angleLegend').textContent=(axial?.label??segmentLabels[j-5])+' · 가져온 파일은 다리 관절각 3개를 지원합니다.';
+  c.fillText('이 파일에는 해당 관절각이 없습니다.',14,35);
+  return;
+ }
+ const series=axial?[p=>blend(axial.samples,p)[0]]:[0,...(scenario?[scenario]:[])].map(model=>p=>segment?segmentAngles(p,model,side)[j-5]:angles(p,side,model)[j]);
+ const sampled=series.map(fn=>Array.from({length:101},(_,p)=>fn(p)));
+ const vals=sampled.flat();
+ const low=segment?Math.floor(Math.min(-5,...vals)/5)*5:axial?-axial.scale:Math.floor(Math.min(-20,...vals)/10)*10;
+ const high=segment?Math.ceil(Math.max(5,...vals)/5)*5:axial?axial.scale:Math.ceil(Math.max(20,...vals)/10)*10;
+ const x=p=>plotX(p,w,angleAxisInsets),y=a=>15+(high-a)*(h-43)/(high-low);
+ for(const a of [low,0,high]){
+  drawLine(c,[[x(0),y(a)],[x(100),y(a)]],'#31495f');
+  c.fillText(a+'°',5,y(a)+4);
+ }
+ [0,25,50,75,100].forEach(p=>c.fillText(p+'%',x(p)-9,h-7));
+ if($('customLoop').checked&&customRangeValid()){
+  c.fillStyle='#253458';c.fillRect(x(customStart),15,x(customEnd)-x(customStart),h-43);
+ }
+ contactPairs().forEach((pair,i)=>pair?.forEach(p=>drawLine(c,[[x(p),14],[x(p),h-25]],i?'#a381d0':'#538eac',1,[3,4])));
+ sampled.forEach((row,i)=>drawLine(c,row.map((a,p)=>[x(p),y(a)]),forceColors[i],2.5));
+ if(pinnedPose)drawLine(c,[[x(pinnedPose.phase),12],[x(pinnedPose.phase),h-25]],'#cbb0ff',2,[8,4]);
+ drawLine(c,[[x(position),12],[x(position),h-25]],'#eaf7ff');
+ const values=series.map(fn=>fn(position).toFixed(axial&&j===4?2:1)+'°');
+ values.forEach((value,i)=>marker(c,x(position),y(series[i](position)),forceColors[i]));
+ if(axial){
+  const sideText=j===4?' · '+(side?'왼쪽':'오른쪽'):'';
+  $('values').textContent=axial.label+sideText+' · '+values[0];
+  $('angleLegend').textContent=axial.direction+' · 0°는 모형의 기준 자세입니다. 정상 보행 교육용 예시이며 실측값, 정상 범위 또는 이상 사례의 수치로 사용할 수 없습니다.';
+ }else{
+  $('values').textContent='기준 '+values[0]+(scenario?' · 비교 '+values[1]:'');
+  $('angleLegend').textContent=(segment?segmentLabels[j-5]+' · '+segmentDirections[j-5]+' · 교육용 모형값. ':'단위 ° · '+(j===2?'발등굽힘':'굽힘')+'이 양수입니다. ')+'청록은 기준 보행, 황색은 비교 사례입니다. 보행 사건 점선은 오른쪽 파랑, 왼쪽 보라입니다.';
+ }
+}
+const phaseButtons=phases.map((name,i)=>{
+ const button=document.createElement('button');button.textContent=name;
+ button.onclick=()=>{const edges=imported?.events||limits;setPlaying(false);position=i===0?0:(edges[i-1]+(edges[i]??100))/2;draw();};
+ $('phases').append(button);return button;
+});
+let filmKey='',filmButtons=[];
+function drawFilmstrip(idx){
+ const strip=$('filmstrip'), enabled=$('showFilmstrip').checked;
+ strip.hidden=!enabled;$('filmInfo').hidden=!enabled;
+ if(!enabled)return;
+ const edges=imported?.events||limits,side=+$('side').value,yaw=+$('cameraYaw').value;
+ const key=JSON.stringify([edges,side,yaw,$('cameraPitch').value,scenario,ataxicCycle,modelBlend(),compensationKey(),$('sceneStyle').value,$('motionInterpolation').value,strip.getBoundingClientRect().width]);
+ if(key!==filmKey){
+  filmKey=key;
+  const positions=[0,edges[1]/2,...edges.slice(1)];
+  filmButtons=positions.map((phase,i)=>{
+   const button=document.createElement('button'),canvas=document.createElement('canvas');
+   const name=document.createElement('span'),caption=document.createElement('small');
+   button.type='button';canvas.setAttribute('aria-hidden','true');
+   name.textContent=phases[i];caption.className='film-caption';caption.textContent=phase.toFixed(1)+'%';
+   button.append(canvas,name,caption);
+   button.onclick=()=>{setPlaying(false);position=phase;draw();};
+   return {button,canvas,phase};
+  });
+  strip.replaceChildren(...filmButtons.map(({button})=>button));
+  filmButtons.forEach(({canvas,phase})=>scene(canvas,phase,scenario,yaw,side,{thumbnail:true}));
+ }
+ filmButtons.forEach(({button},i)=>button.setAttribute('aria-pressed',String(i===idx)));
+}
+const differenceLabels=['엉덩관절','무릎관절','발목관절'];
+function angleDifferences(p,side,model){
+ const baseline=angles(p,side,0);
+ return angles(p,side,model).map((value,i)=>value-baseline[i]);
+}
+function drawMotionDifferences(){
+ const enabled=$('sceneDifferences').checked;
+ $('motionDeltaPanel').hidden=!enabled;
+ if(!enabled)return;
+ const list=$('motionDeltas');
+ $('motionDeltaNote').textContent=scenario
+  ?'보라 화살표는 화면에 투영된 기준 관절점에서 비교 관절점을 가리킵니다. 각도 차이는 비교 − 기준이며, 양수는 굽힘 또는 발등굽힘이 더 큼을 뜻합니다.'
+  :'이상 보행 사례를 선택하면 기준 다리의 관절 위치와 각도 차이가 표시됩니다.';
+ list.hidden=!scenario;
+ if(!scenario)return;
+ if(!list.children.length){
+  differenceLabels.forEach(label=>{
+   const item=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');
+   term.textContent=label;item.append(term,value);list.append(item);
+  });
+ }
+ angleDifferences(position,+$('side').value,scenario).forEach((value,i)=>{
+  const rounded=Math.round(value*10)/10;
+  list.children[i].children[1].textContent=(rounded>0?'+':'')+rounded.toFixed(1)+'°';
+ });
+}
+const rockerScenes=[
+ ['heelRocker',4],['ankleRocker',23],['forefootRocker',54],['toeOffDetail',60]
+];
+rockerScenes.forEach(([id,p])=>{
+ $(id).onclick=()=>{setPlaying(false);position=p;draw();};
+});
+// The pose uses a 0.46 + 0.43 model-length thigh/shank.
+function toeClearanceValue(p,model,side){
+ const pose=motionPose(p,model,side);
+ return Math.max(0,pose.limbs[0][5][1]-pose.groundOffset)/.89*100;
+}
+let clearanceCache={key:null,series:[]};
+function clearanceSeries(side){
+ const key=JSON.stringify([side,scenario,ataxicCycle,modelBlend(),compensationKey(),$('motionInterpolation').value]);
+ if(clearanceCache.key!==key){
+  const series=[0,...(scenario?[scenario]:[])].map(model=>
+   Array.from({length:81},(_,i)=>[60+i/2,toeClearanceValue(60+i/2,model,side)]));
+  clearanceCache={key,series};
+ }
+ return clearanceCache.series;
+}
+function middleSwingMinimum(series){
+ return series.filter(([p])=>p>=73&&p<=87).reduce((a,b)=>b[1]<a[1]?b:a);
+}
+function axialRotation(p,model,side){
+ const {pelvis,shoulders}=motionPose(p,model,side);
+ const rightFirst=side===0?pelvis:[pelvis[1],pelvis[0]];
+ const angle=([right,left])=>Math.atan2(right[0]-left[0],left[2]-right[2])*180/Math.PI;
+ const pelvic=angle(rightFirst),shoulder=angle(shoulders);
+ return {pelvic,shoulder,relative:shoulder-pelvic};
+}
+function drawRotationView(side){
+ const enabled=$('showRotation').checked;
+ $('rotationPanel').hidden=!enabled;
+ if(!enabled)return;
+ $('rotationComparePanel').hidden=!!imported||!scenario;
+ $('rotationBaseTitle').textContent=$('baseTitle').textContent;
+ $('rotationCompareTitle').textContent=$('caseTitle').textContent;
+ for(const [id,model] of [['Base',0],...(!imported&&scenario?[['Compare',scenario]]:[])]){
+  const plot=prepareCanvas($('rotation'+id),180);
+  if(!plot)continue;
+  const {context:c,width:w,height:h}=plot;
+  const output=$('rotation'+id+'Values');
+  if(imported){
+   c.fillText('가져온 기록에는 어깨·골반 돌림 자료가 없습니다.',12,30);
+   output.textContent='내장 교육용 모형에서 가로면 돌림을 볼 수 있습니다.';
+   continue;
+  }
+  const {pelvic,shoulder,relative}=axialRotation(position,model,side);
+  c.fillStyle='#b4c9dc';c.fillText('전진 ↑',w/2-21,23);
+  c.fillText('왼쪽',12,h-13);c.fillText('오른쪽',w-49,h-13);
+  drawLine(c,[[w/2,32],[w/2,h-30]],'#607a93',1,[4,5]);
+  for(const [angle,radius,color] of [[shoulder,.38,'#cbb0ff'],[pelvic,.27,'#52e5cd']]){
+   const cx=w/2,cy=h*.55,half=w*radius;
+   const rise=Math.tan(angle*Math.PI/180)*half;
+   drawLine(c,[[cx-half,cy],[cx+half,cy]],'#3f5c75',1,[3,4]);
+   drawLine(c,[[cx-half,cy+rise],[cx+half,cy-rise]],color,4);
+   marker(c,cx-half,cy+rise,color);marker(c,cx+half,cy-rise,color);
+  }
+  const format=value=>(value>=.05?'+':'')+(Math.abs(value)<.05?0:value).toFixed(1)+'°';
+  output.textContent=position.toFixed(1)+'% · 골반 '+format(pelvic)+' · 어깨 '+format(shoulder)+' · 상대 돌림 '+format(relative);
+ }
+}
+function drawToeClearance(side){
+ const selected=$('showToeClearance').checked;
+ $('toeClearance').hidden=!selected;
+ if(!selected)return;
+ const canvas=$('toeClearanceChart');
+ const plot=prepareCanvas(canvas,194);
+ if(!plot)return;
+ const {context:c,width:w,height:h}=plot;
+ if(imported){
+  canvas.setAttribute('aria-disabled','true');
+  $('toeClearanceNow').textContent='내장 교육용 모형에서 발끝 높이를 비교할 수 있습니다.';
+  $('toeClearanceLow').textContent='';
+  c.fillText('이 기록에는 발끝 높이 자료가 없습니다.',12,32);return;
+ }
+ canvas.removeAttribute('aria-disabled');
+ const rows=clearanceSeries(side),phase=Math.min(100,Math.max(60,position));
+ canvas.setAttribute('aria-valuenow',phase.toFixed(1));
+ const [left,right]=clearanceInsets;
+ const x=p=>left+(p-60)*(w-left-right)/40;
+ const top=Math.max(5,Math.ceil(Math.max(...rows.flatMap(row=>row.map(([,v])=>v)))/5)*5);
+ const y=v=>12+(top-v)*(h-39)/top;
+ c.fillStyle='#1a3048';c.fillRect(x(73),12,x(87)-x(73),h-39);
+ for(const v of [0,top/2,top]){
+  drawLine(c,[[x(60),y(v)],[x(100),y(v)]],'#425c73');
+  c.fillStyle='#a9c2d8';c.fillText(v+'%',3,y(v)+4);
+ }
+ for(const p of [60,70,80,90,100])c.fillText(p+'%',x(p)-11,h-8);
+ const colors=['#52e5cd','#ffcc74'];
+ rows.forEach((row,i)=>drawLine(c,row.map(([p,v])=>[x(p),y(v)]),colors[i],2.5));
+ const minima=rows.map(middleSwingMinimum);
+ minima.forEach(([p,v],i)=>marker(c,x(p),y(v),colors[i]));
+ if(position>=60){
+  drawLine(c,[[x(phase),11],[x(phase),h-26]],'#eef4fc');
+  const values=[0,...(scenario?[scenario]:[])].map(model=>toeClearanceValue(phase,model,side));
+  $('toeClearanceNow').textContent='현재 '+phase.toFixed(1)+'% · 기준 '+values[0].toFixed(1)+'%'+(scenario?' / 비교 '+values[1].toFixed(1)+'%':'');
+ }else $('toeClearanceNow').textContent='발가락떼기 이후의 흔듦기 구간을 선택하세요.';
+ $('toeClearanceLow').textContent='중간흔듦기 구간(73–87%) 최저 표본 · '+minima.map(([p,v],i)=>(i?'비교 ':'기준 ')+v.toFixed(1)+'% (보행 주기 '+p.toFixed(1)+'%)').join(' / ');
+}
+function drawFootDetail(side){
+ const active=$('showFootDetail').checked;
+ $('footDetail').hidden=!active;
+ if(!active)return;
+ $('rockerButtons').hidden=!!imported;
+ const plot=prepareCanvas($('footCanvas'),210);
+ if(!plot)return;
+ const {context:c,width:w,height:h}=plot;
+ if(imported){
+  $('footDetailText').textContent='가져온 기록에는 발가락 관절 움직임이 포함되어 있지 않습니다.';
+  c.fillText('발가락 관절 자료 없음',16,36);return;
+ }
+ const pose=motionPose(position,0,side);
+ const [,knee,ankle,heel,ball,toe]=pose.limbs[0];
+ const scale=Math.min(w/.78,245);
+ const local=([x,y])=>[w*.48+(x-ball[0])*scale,h-45-(y-pose.groundOffset)*scale];
+ const lowerShank=ankle.map((value,i)=>value+.34*(knee[i]-value));
+ drawLine(c,[[10,h-45],[w-10,h-45]],'#536d85',2);
+ drawLine(c,[lowerShank,ankle].map(local),'#aec3da',9);
+ drawLine(c,[ankle,heel,ball].map(local),'#52e5cd',7);
+ drawLine(c,[ball,toe].map(local),'#ffd369',6);
+ [ankle,heel,ball].forEach((point,i)=>{
+  const [x,y]=local(point);marker(c,x,y,i===2?'#ffd369':'#f2f7ff');
+  c.fillStyle='#deebf9';c.fillText(['발목','발꿈치','앞발'][i],Math.max(4,Math.min(w-49,x+(i===2?8:-24))),Math.max(14,y+(i===1?20:-11)));
+ });
+ const p=position===100?0:position;
+ const note=p<10?'발꿈치를 중심으로 앞발이 내려오는 장면입니다.':p<32?'발이 바닥에 놓인 상태에서 정강뼈가 앞으로 진행하는 장면입니다.':p<60?'발꿈치가 들리고 앞발을 중심으로 몸이 전진하는 장면입니다.':p===60?'발가락이 지면에서 떨어지는 예시 시점입니다.':'흔듦기로 넘어간 뒤의 발 자세입니다.';
+ $('footDetailText').textContent=sideNames[side]+' 기준 다리 · '+position.toFixed(1)+'% · 발허리발가락관절 폄 '+toeExtension(p,0).toFixed(1)+'° · '+note;
+}
+function exportLayout(){
+ const figures=[{title:$('baseTitle').textContent,model:0}];
+ if(scenario)figures.push({title:$('caseTitle').textContent,model:scenario});
+ return {
+  figures,side:+$('side').value,yaw:+$('cameraYaw').value,
+  edges:imported?.events||limits,canvas:document.createElement('canvas'),panel:document.createElement('canvas')
+ };
+}
+function exportFrame(layout,p){
+ const {canvas,panel,figures,side,yaw,edges}=layout;
+ const panelWidth=560,gap=16,width=figures.length*panelWidth+(figures.length+1)*gap,height=430;
+ if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+ const c=canvas.getContext('2d');
+ c.fillStyle='#0b1827';c.fillRect(0,0,width,height);
+ c.font='700 19px system-ui';c.fillStyle='#f1f7ff';
+ c.fillText('보행 분석 · '+phases[phaseIndex(p,edges)]+' · '+p.toFixed(1)+'%',gap,27);
+ c.font='14px system-ui';c.fillStyle='#acc5db';
+ c.fillText(sideNames[side]+' 기준 다리 · '+(imported?'가져온 기록':'교육용 모형'),gap,48);
+ figures.forEach(({title,model},i)=>{
+  const x=gap+i*(panelWidth+gap);
+  c.fillStyle='#14283c';c.fillRect(x,60,panelWidth,350);
+  c.fillStyle='#f1f7ff';c.font='600 15px system-ui';c.fillText(title,x+12,81,panelWidth-24);
+  scene(panel,p,model,yaw,side,{exportWidth:panelWidth});
+  c.drawImage(panel,x,86,panelWidth,324);
+ });
+ return canvas;
+}
+function saveGaitBlob(blob,name){
+ const url=URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;link.download=name;link.click();
+ setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+let activeVideo=null;
+function setExportBusy(busy){
+ $('saveGaitImage').disabled=busy;$('saveGaitVideo').disabled=busy;
+ $('cancelGaitVideo').hidden=!busy;
+}
+$('saveGaitImage').onclick=()=>{
+ try{
+  const canvas=exportFrame(exportLayout(),position);
+  canvas.toBlob(blob=>{
+   if(!blob){$('exportStatus').textContent='이미지를 만들 수 없습니다.';return;}
+   saveGaitBlob(blob,'gait-pose.png');$('exportStatus').textContent='현재 자세 이미지 저장을 시작했습니다.';
+  },'image/png');
+ }catch(error){$('exportStatus').textContent='이미지 저장 실패 · '+error.message;}
+};
+function finishVideo(job,success,message){
+ if(activeVideo!==job)return;
+ activeVideo=null;
+ cancelAnimationFrame(job.frameId);
+ job.stream.getTracks().forEach(track=>track.stop());
+ setExportBusy(false);
+ $('exportStatus').textContent=message;
+ if(success&&job.chunks.length){
+  const type=job.recorder.mimeType||job.chunks[0].type||'video/webm';
+  saveGaitBlob(new Blob(job.chunks,{type}),'gait-cycle.'+(type.includes('mp4')?'mp4':'webm'));
+ }else if(success)$('exportStatus').textContent='브라우저가 저장할 영상 데이터를 만들지 못했습니다.';
+}
+function cancelVideo(message){
+ const job=activeVideo;
+ if(!job)return;
+ finishVideo(job,false,message);
+ if(job.recorder.state!=='inactive')job.recorder.stop();
+}
+$('cancelGaitVideo').onclick=()=>cancelVideo('영상 저장을 취소했습니다.');
+$('saveGaitVideo').onclick=()=>{
+ if(activeVideo)return;
+ let stream;
+ try{
+  if(typeof MediaRecorder==='undefined')throw Error('이 브라우저는 영상 저장을 지원하지 않습니다.');
+  setPlaying(false);
+  const layout=exportLayout(),canvas=exportFrame(layout,0);
+  if(typeof canvas.captureStream!=='function')throw Error('이 브라우저는 영상 저장을 지원하지 않습니다.');
+  stream=canvas.captureStream(30);
+  const type=['video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported?.(t));
+  const recorder=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream);
+  const job={stream,recorder,chunks:[],frameId:0};
+  activeVideo=job;
+  recorder.ondataavailable=event=>{if(event.data.size)job.chunks.push(event.data);};
+  recorder.onerror=()=>finishVideo(job,false,'영상 저장 중 브라우저 오류가 발생했습니다.');
+  recorder.onstop=()=>finishVideo(job,true,'한 주기 영상 저장을 시작했습니다.');
+  recorder.start();
+  setExportBusy(true);
+  const duration=1000*Number($('cycleDuration').value||1.8)/Number($('speed').value||1);
+  let started=null;
+  const tick=now=>{
+   if(activeVideo!==job)return;
+   try{
+    if(started===null)started=now;
+    const phase=Math.min(100,(now-started)/duration*100);
+    exportFrame(layout,phase);
+    $('exportStatus').textContent='영상 생성 중 · '+Math.round(phase)+'%';
+    if(now-started>=duration+180){recorder.stop();return;}
+    job.frameId=requestAnimationFrame(tick);
+   }catch(error){cancelVideo('영상 저장 실패 · '+error.message);}
+  };
+  job.frameId=requestAnimationFrame(tick);
+ }catch(error){
+  if(activeVideo)cancelVideo('영상 저장 실패 · '+error.message);
+  else{
+   stream?.getTracks().forEach(track=>track.stop());
+   $('exportStatus').textContent='영상 저장 실패 · '+error.message;
+  }
+ }
+};
+function drawFixedWalk(idx,side){
+ const enabled=$('showFixedWalk').checked;
+ $('fixedWalk').hidden=!enabled;
+ if(!enabled)return;
+ $('fixedWalkModels').hidden=!!imported;
+ $('playFixedWalk').disabled=!!imported;
+ $('fixedWalkInfo').textContent=imported?'전진 이동은 내장 교육용 모형에서 제공됩니다.':
+  phases[idx]+' · '+position.toFixed(1)+'% · '+sideNames[side]+' 기준 다리';
+ if(imported)return;
+ $('fixedReferenceTitle').textContent=$('baseTitle').textContent;
+ scene($('fixedReference'),position,0,0,side,{fixedWalk:true});
+ $('fixedComparison').hidden=!scenario;
+ if(scenario){
+  $('fixedCaseTitle').textContent=$('caseTitle').textContent;
+  scene($('fixedCase'),position,scenario,0,side,{fixedWalk:true});
+ }
+}
+let rearComparison=false;
+$('jumpRearView').onclick=()=>{
+ rearComparison=true;
+ $('showMultiView').checked=true;
+ $('view').value='-90';syncPresetCamera();
+ if(!scenario&&!practiceActive){
+  $('case').value='1';changeCase();
+ }else draw();
+ $('rearViewHeading').focus?.({preventScroll:true});
+ $('multiViewSection').scrollIntoView?.({block:'start'});
+};
+$('backToMultiView').onclick=()=>{rearComparison=false;draw();};
+function drawMultiView(idx,side){
+ const enabled=$('showMultiView').checked;
+ const panel=$('multiView');
+ panel.hidden=!enabled;
+ if(!enabled)return;
+ const paired=rearComparison&&!!scenario;
+ panel.classList.toggle('rear-comparison',paired);
+ $('backToMultiView').hidden=!paired;
+ $('multiPhase').textContent=phases[idx]+' · '+position.toFixed(1)+'% · '+sideNames[side]+' 기준 다리';
+ $('multiReferenceTitle').textContent=$('baseTitle').textContent;
+ const options={orthographic:true};
+ if(!paired){
+  scene($('multiFront'),position,0,90,side,options);
+  scene($('multiSide'),position,0,0,side,options);
+ }
+ scene($('multiRear'),position,0,-90,side,options);
+ $('multiComparison').hidden=!scenario;
+ if(scenario){
+  $('multiCaseTitle').textContent=$('caseTitle').textContent;
+  if(!paired){
+   scene($('multiCaseFront'),position,scenario,90,side,options);
+   scene($('multiCaseSide'),position,scenario,0,side,options);
+  }
+  scene($('multiCaseRear'),position,scenario,-90,side,options);
+ }
+}
+const limbTasks=[
+ ['체중 받기 준비','발꿈치 접촉에 대비해 발목과 무릎 자세를 잡습니다.','앞정강근 · 넙다리네갈래근'],
+ ['체중 받아들이기','무릎 굽힘과 발 앞부분이 내려가는 속도를 각각 조절합니다.','넙다리네갈래근 · 앞정강근 · 큰볼기근'],
+ ['한 발 지지','디딤 다리 위에서 골반을 유지하고 정강뼈의 전진을 조절합니다.','중간볼기근 · 가자미근 · 장딴지근'],
+ ['몸의 전진','골반을 안정시키면서 발꿈치가 들리고 앞발을 통해 몸이 전진합니다.','가자미근 · 장딴지근'],
+ ['반대쪽으로 체중 넘기기','반대쪽에 체중을 넘기고 넙다리를 앞으로 보낼 준비를 합니다.','장딴지근 · 엉덩허리근'],
+ ['다리 전진과 발끝 통과','엉덩관절을 굽혀 다리를 전진시키고 발끝이 바닥을 지날 공간을 확보합니다.','엉덩허리근 · 앞정강근'],
+ ['발끝 높이 유지','발목을 중립 부근에 유지하면서 다리가 몸 아래를 지나갑니다.','앞정강근'],
+ ['다리 전진 감속','넙다리 전진과 무릎 폄을 감속해 다음 초기접촉을 준비합니다.','뒤넙다리근 · 큰볼기근']
+];
+let bilateralKey='';
+function drawBilateralMuscles(idx,side){
+ const otherPhase=phaseIndex((position+50)%100,limits);
+ const status=contactPairs().map(pair=>!!inContact(pair,position));
+ const key=JSON.stringify([!!imported,idx,otherPhase,side,status]);
+ if(key===bilateralKey)return;
+ bilateralKey=key;
+ $('musclePair').hidden=!!imported;
+ $('cooperationHint').hidden=!!imported;
+ $('bilateralMuscleIntro').textContent=imported
+  ?'이 비교는 내장 정상 보행의 교육용 근육 자료를 사용합니다.'
+  :'내장 정상 보행 모형에서 반대쪽 다리는 기준 다리보다 보행 주기의 50%만큼 앞서 있습니다.';
+ if(imported)return;
+ for(const [prefix,leg,phase] of [['ref',side,idx],['other',1-side,otherPhase]]){
+  const [task,body,muscles]=limbTasks[phase];
+  $(prefix+'TaskTitle').textContent=sideNames[leg]+' · '+phases[phase];
+  $(prefix+'TaskBody').textContent=task+' — '+body;
+  $(prefix+'TaskMuscles').textContent='관찰할 근육 · '+muscles;
+ }
+ const note=status.every(Boolean)?'양발이 닿아 있습니다. 먼저 닿은 쪽에서 새로 닿은 쪽으로 체중이 옮겨가는 과정을 관찰하세요.':
+  status.some(Boolean)?sideNames[status[0]?0:1]+' 다리가 몸을 지지하는 동안 '+sideNames[status[0]?1:0]+' 다리는 앞으로 이동합니다.':
+  '발 접촉 사건과 근육의 과제를 함께 비교해 보세요.';
+ $('cooperationHint').textContent=note;
+}
+const muscleCases={
+ hip:{p:24,model:1,view:90,joint:6,muscle:'중간볼기근',
+  observation:'앞면에서 지지 다리 반대쪽 골반이 내려가는지 봅니다. 몸통이 지지 쪽으로 기울어지는지도 따로 관찰합니다.',
+  mechanism:'지지 쪽 엉덩관절 벌림근의 힘이나 조절이 부족하면 반대쪽 골반의 하강이 커질 수 있습니다.',
+  assessment:'엉덩관절 벌림근 근력과 한 다리 지지 중 골반·몸통 조절을 확인합니다. 통증 때문에 지지 자세가 달라지는지도 살펴봅니다.'},
+ drop:{p:80,model:4,view:0,joint:2,muscle:'앞정강근',
+  observation:'옆면에서 중간흔듦기의 발끝 높이와 발목 발등굽힘을 봅니다. 무릎과 엉덩관절을 더 굽히는지도 확인합니다.',
+  mechanism:'앞정강근 등 발등굽힘근의 힘이나 활성 조절이 부족하면 흔듦기 중 발끝이 낮아질 수 있습니다. 발목의 수동 발등굽힘 제한도 고려합니다.',
+  assessment:'능동·수동 발등굽힘과 발등굽힘 근력을 비교합니다. 무릎 굽힘이나 골반 움직임이 발끝 높이에 미치는 영향도 함께 관찰합니다.'},
+ ankle:{p:31,model:2,view:0,joint:2,muscle:'장딴지근',
+  observation:'옆면에서 발이 지면에 놓인 동안 발목 발등굽힘과 정강뼈의 전진이 어느 정도인지 비교합니다.',
+  mechanism:'장딴지근·가자미근을 포함한 발바닥굽힘 구조의 길이 제한은 발등굽힘을 제한할 수 있습니다. 통증이나 발목관절 자체의 뻣뻣함도 고려합니다.',
+  assessment:'무릎을 폈을 때와 굽혔을 때 수동 발등굽힘을 비교합니다. 체중을 실었을 때 발꿈치가 들리는 시점과 발의 보상 움직임도 확인합니다.'}
+};
+function updateMuscleCase(){
+ const item=muscleCases[$('muscleCase').value]??muscleCases.hip;
+ $('muscleCaseObservation').textContent=item.observation;
+ $('muscleCaseMechanism').textContent=item.mechanism;
+ $('muscleCaseAssessment').textContent=item.assessment;
+}
+$('muscleCase').onchange=()=>{$('muscleCaseStatus').textContent='';updateMuscleCase();};
+$('muscleCaseJump').onclick=()=>{
+ if(imported||practiceActive)return;
+ const item=muscleCases[$('muscleCase').value]??muscleCases.hip;
+ setPlaying(false);position=item.p;
+ $('case').value=String(item.model);$('modelBlend').value='100';$('view').value=String(item.view);
+ $('joint').value=String(item.joint);
+ $('sceneMuscle').value=String(tracks.findIndex(([name])=>name===item.muscle)+1);
+ if(item.model===4)$('showToeClearance').checked=true;
+ syncPresetCamera();changeCase();
+ $('muscleCaseStatus').textContent='보행 주기 '+item.p+'% · '+item.muscle+'의 비교 장면을 열었습니다.';
+ $('scenes').scrollIntoView?.({block:'nearest'});
+};
+updateMuscleCase();
+const momentDirections=[
+ ['엉덩관절','굽힘','폄','큰볼기근 등 엉덩관절 폄근','엉덩허리근 등 엉덩관절 굽힘근'],
+ ['무릎관절','폄','굽힘','뒤넙다리근 등 무릎 굽힘근','넙다리네갈래근'],
+ ['발목관절','발등굽힘','발바닥굽힘','가자미근·장딴지근 등 발바닥굽힘근','앞정강근 등 발등굽힘근']
+];
+function sagittalGrfMoment(p,side,joint){
+ const {cop,force}=sceneKinetics(p,side);
+ if(!cop||!force||force[0]<=0)return null;
+ const pose=motionPose(p,0,side);
+ const limb=pose.limbs[0];
+ const points=limb.map(([x,y])=>[x,y-pose.groundOffset]);
+ const start=[limb[3][0]+(limb[5][0]-limb[3][0])*cop[0]/100,0];
+ const [vertical,forward]=force;
+ const magnitude=Math.hypot(forward,vertical);
+ const unit=[forward/magnitude,vertical/magnitude];
+ const center=points[joint],delta=center.map((v,i)=>v-start[i]);
+ const projection=delta[0]*unit[0]+delta[1]*unit[1];
+ const foot=start.map((v,i)=>v+projection*unit[i]);
+ const signedArm=unit[0]*delta[1]-unit[1]*delta[0];
+ return {points,start,center,foot,unit,signedArm};
+}
+function drawMomentLesson(side){
+ if(!$('momentLesson').open)return;
+ const plot=prepareCanvas($('momentCanvas'),235);
+ if(!plot)return;
+ const {context:c,width:w,height:h}=plot;
+ const joint=+$('momentJoint').value;
+ const result=imported?null:sagittalGrfMoment(position,side,joint);
+ if(!result){
+  const message=imported?'내장 정상 보행 모형에서 작용선을 볼 수 있습니다.':'기준 발에 하중이 있는 디딤기 장면을 선택하세요.';
+  $('momentResult').textContent=message;$('momentRole').textContent='';
+  c.fillText('작용선 표시 없음',12,28);return;
+ }
+ const {points,start,center,foot,unit,signedArm}=result;
+ const scale=Math.min(w*.66,167);
+ const at=([x,y])=>[w*.48+x*scale,h-31-y*scale];
+ const end=start.map((v,i)=>v+unit[i]*1.13);
+ drawLine(c,[[12,h-31],[w-12,h-31]],'#53718d',2);
+ drawLine(c,points.map(at),'#b9d3e6',6);
+ drawLine(c,[at(start),at(end)],'#ffd369',3);
+ const tip=at(end),back=at(end.map((v,i)=>v-.06*unit[i]));
+ const arrow=Math.atan2(tip[1]-back[1],tip[0]-back[0]);
+ drawLine(c,[[tip[0]-8*Math.cos(arrow-.5),tip[1]-8*Math.sin(arrow-.5)],tip,[tip[0]-8*Math.cos(arrow+.5),tip[1]-8*Math.sin(arrow+.5)]],'#ffd369',3);
+ drawLine(c,[at(center),at(foot)],'#cbb0ff',2,[4,4]);
+ marker(c,...at(start),'#52e5cd');marker(c,...at(center),'#cbb0ff');
+ const [name,positive,negative,resistPositive,resistNegative]=momentDirections[joint];
+ const near=Math.abs(signedArm)<.003;
+ const direction=signedArm>=0?positive:negative;
+ $('momentResult').textContent=name+' · '+position.toFixed(1)+'% · '+(near?'작용선이 관절 중심 부근을 지나 외부 돌림 효과가 작습니다.':'지면반발력은 '+direction+' 방향으로 관절을 돌리려 합니다.');
+ $('momentRole').textContent=near?'이 순간의 작용선만으로 근육의 수축 유형을 판단할 수 없습니다.':
+  '이 방향을 제어하는 근육 예시 · '+(signedArm>=0?resistPositive:resistNegative)+'. 실제 수축 유형은 관절 움직임과 근육·힘줄 거동을 함께 살펴봅니다.';
+}
+$('momentLesson').ontoggle=draw;
+$('momentJoint').onchange=draw;
+[['momentLoading',5],['momentMid',23],['momentLate',45]].forEach(([id,p])=>{
+ $(id).onclick=()=>{setPlaying(false);position=p;draw();};
+});
+for(const [id,defaultMuscle] of [['timingMuscleA','앞정강근'],['timingMuscleB','가자미근']]){
+ const select=$(id);
+ tracks.forEach(([name],index)=>{
+  const option=document.createElement('option');
+  option.value=String(index);option.textContent=name;select.append(option);
+ });
+ select.value=String(tracks.findIndex(([name])=>name===defaultMuscle));
+ select.onchange=draw;
+}
+$('muscleTiming').ontoggle=draw;
+let timingPairKey='',timingDetailKey='',timingCells=[];
+function drawMuscleTiming(idx){
+ if(!$('muscleTiming').open)return;
+ const grid=$('muscleTimingGrid');
+ const rows=['timingMuscleA','timingMuscleB'].map(id=>tracks[Number($(id).value)]);
+ const pairKey=rows.map(([name])=>name).join('|');
+ const detailKey=pairKey+'|'+idx+'|'+!!imported;
+ if(pairKey!==timingPairKey){
+  timingPairKey=pairKey;
+  timingCells=[];
+  const durations=limits.slice(1).map((end,i)=>end-limits[i]).concat(100-limits.at(-1));
+  grid.style.gridTemplateColumns='minmax(94px,1.2fr) 34px '+durations.map(v=>'minmax(28px,'+(v/10)+'fr)').join(' ');
+  const title=document.createElement('span');title.textContent='근육';grid.replaceChildren(title);
+  muscleHeaders.forEach((name,i)=>{
+   const head=document.createElement('span');head.className='timing-header';
+   head.textContent=name;head.title=phases[i];grid.append(head);
+  });
+  rows.forEach(([name,sequence])=>{
+   const label=document.createElement('span');label.textContent=name;grid.append(label);
+   sequence.split(' ').forEach((code,phase)=>{
+    const [symbol,type,color]=actions[code];
+    const button=document.createElement('button');button.type='button';
+    button.className='muscle-cell '+color;button.textContent=symbol;button.title=type;
+    button.setAttribute('aria-label',name+' · '+phases[phase]+' · '+type);
+    button.onclick=()=>phaseButtons[phase].onclick();
+    grid.append(button);timingCells.push({button,phase});
+   });
+  });
+ }
+ if(detailKey===timingDetailKey)return;
+ timingDetailKey=detailKey;
+ timingCells.forEach(({button,phase})=>{
+  button.classList.toggle('timing-current',phase===idx);
+  button.setAttribute('aria-current',phase===idx?'step':'false');
+ });
+ const codes=rows.map(([,sequence])=>sequence.split(' ')[idx]);
+ const shown=codes.filter(code=>code!=='-').length;
+ $('muscleTimingState').textContent=phases[idx]+' · '+(shown===2?'두 근육 모두 대표 역할이 제시됩니다.':shown===1?'한 근육의 대표 역할이 제시됩니다.':'두 근육의 대표 역할 표시가 비어 있습니다.')
+  +(imported?' 가져온 기록 위에서 정상 모형의 설명을 참고하고 있습니다.':'');
+ $('muscleTimingRoles').replaceChildren(...rows.map(([name],i)=>{
+  const li=document.createElement('li'),role=muscleRole(name,idx);
+  li.textContent=name+' · '+actions[codes[i]][1]+(role?' — '+role:'');
+  return li;
+ }));
+}
+const muscleQuizItems=[
+ {phase:5,view:0,muscle:'넙다리네갈래근',question:'체중을 받아들이며 무릎이 굽혀집니다. 이때 넙다리네갈래근의 대표 작용은 무엇일까요?',
+  options:['편심성 작용으로 무릎 굽힘을 조절한다','동심성 작용으로 무릎 굽힘을 만든다','등척성 작용으로 무릎 각도를 고정한다'],answer:0,
+  why:'무릎이 굽혀지는 동안 넙다리네갈래근은 폄 방향의 힘을 내어 굽힘을 제어합니다.'},
+ {phase:24,view:90,muscle:'중간볼기근',question:'기준 다리만 바닥에 닿아 있습니다. 반대쪽 골반 높이 조절에 가장 직접적으로 기여하는 근육은 무엇일까요?',
+  options:['반대쪽 앞정강근','지지 쪽 중간볼기근','지지 쪽 장딴지근'],answer:1,
+  why:'지지 쪽 중간볼기근을 포함한 엉덩관절 벌림근이 반대쪽 골반 하강을 조절합니다.'},
+ {phase:78,view:0,muscle:'앞정강근',question:'기준 발이 바닥을 지나갈 때 발목 자세와 발끝 간격 유지에 기여하는 근육은 무엇일까요?',
+  options:['장딴지근','척추세움근','앞정강근'],answer:2,
+  why:'앞정강근은 발목을 발등굽힘 방향으로 조절해 흔듦기의 발끝 간격 유지에 기여합니다.'},
+ {phase:94,view:0,muscle:'뒤넙다리근',question:'다음 초기접촉 직전, 넙다리의 전진과 무릎 폄의 속도를 늦추는 근육은 무엇일까요?',
+  options:['뒤넙다리근','가자미근','중간볼기근'],answer:0,
+  why:'뒤넙다리근은 말기흔듦기에 넙다리가 앞으로 움직이고 무릎이 펴지는 속도를 줄이는 데 기여합니다.'}
+];
+let muscleQuizIndex=0,muscleQuizAnswer=null,muscleQuizScore=0,muscleQuizRenderKey='';
+function renderMuscleQuiz(){
+ if(!$('muscleQuiz').open)return;
+ const unavailable=!!imported||practiceActive;
+ $('muscleQuizBody').hidden=unavailable;
+ $('muscleQuizUnavailable').hidden=!unavailable;
+ if(unavailable){muscleQuizRenderKey='';return;}
+ const item=muscleQuizItems[muscleQuizIndex],side=+$('side').value;
+ const key=[muscleQuizIndex,muscleQuizAnswer,muscleQuizScore,side,$('sceneStyle').value,$('cameraPitch').value,$('motionInterpolation').value,$('muscleQuizCanvas').getBoundingClientRect().width].join('|');
+ if(muscleQuizRenderKey===key)return;
+ muscleQuizRenderKey=key;
+ scene($('muscleQuizCanvas'),item.phase,0,item.view,side,{thumbnail:true});
+ $('muscleQuizProgress').textContent=(muscleQuizIndex+1)+' / '+muscleQuizItems.length+'문항 · 정답 '+muscleQuizScore+'개 · '+sideNames[side]+' 기준 다리';
+ $('muscleQuizQuestion').textContent=item.question;
+ $('muscleQuizChoices').replaceChildren(...item.options.map((text,index)=>{
+  const button=document.createElement('button');button.type='button';button.className='quiz-answer';button.textContent=text;
+  button.disabled=muscleQuizAnswer!==null;
+  button.setAttribute('aria-pressed',String(muscleQuizAnswer===index));
+  if(muscleQuizAnswer!==null&&index===item.answer)button.setAttribute('data-correct','');
+  button.onclick=()=>{
+   if(muscleQuizAnswer!==null)return;
+   muscleQuizAnswer=index;
+   if(index===item.answer)muscleQuizScore++;
+   renderMuscleQuiz();
+   $('muscleQuizReveal').focus?.();
+  };
+  return button;
+ }));
+ const answered=muscleQuizAnswer!==null;
+ $('muscleQuizFeedback').textContent=!answered?'':(muscleQuizAnswer===item.answer?'정답입니다. ':'정답은 ‘'+item.options[item.answer]+'’입니다. ')+item.why;
+ $('muscleQuizReveal').hidden=!answered;
+ $('muscleQuizNext').disabled=!answered;
+ $('muscleQuizNext').textContent=muscleQuizIndex===muscleQuizItems.length-1?'처음부터 다시 풀기':'다음 문항';
+}
+$('muscleQuiz').ontoggle=()=>{
+ muscleQuizRenderKey='';
+ if($('muscleQuiz').open)renderMuscleQuiz();
+};
+$('muscleQuizNext').onclick=()=>{
+ if(muscleQuizAnswer===null)return;
+ muscleQuizIndex=(muscleQuizIndex+1)%muscleQuizItems.length;
+ if(!muscleQuizIndex)muscleQuizScore=0;
+ muscleQuizAnswer=null;renderMuscleQuiz();
+ $('muscleQuizChoices').firstElementChild?.focus?.();
+};
+$('muscleQuizReveal').onclick=()=>{
+ if(muscleQuizAnswer===null||imported||practiceActive)return;
+ const item=muscleQuizItems[muscleQuizIndex];
+ setPlaying(false);position=item.phase;
+ $('sceneMuscle').value=String(tracks.findIndex(([name])=>name===item.muscle)+1);
+ $('view').value=String(item.view);syncPresetCamera();draw();
+ $('muscleDetail').scrollIntoView?.({block:'nearest'});
+};
+let emgRecords=null,emgSynthetic=false,emgRequest=0;
+function parseEmg(csv){
+ const lines=csv.replace(/^\uFEFF/,'').trim().split(/\r?\n/).filter(line=>line.trim());
+ const header=lines.shift()?.replace(/\s/g,'').toLowerCase();
+ const multiple=header==='cycle,phase,muscle,side,value';
+ if(!multiple&&header!=='phase,muscle,side,value')throw Error('첫 줄은 phase,muscle,side,value 또는 cycle,phase,muscle,side,value여야 합니다.');
+ if(!lines.length||lines.length>12000)throw Error('자료 행은 1–12,000개를 입력하세요.');
+ const cycles=new Map();
+ for(const [i,line] of lines.entries()){
+  const fields=line.split(',').map(value=>value.trim());
+  const cycle=multiple?fields.shift():'1';
+  if(!cycle||!/^[-_\p{L}0-9]{1,30}$/u.test(cycle))throw Error((i+2)+'번째 줄의 주기 이름을 확인하세요.');
+  if(!cycles.has(cycle))cycles.set(cycle,new Map());
+  const data=cycles.get(cycle);
+  const [phase,name,side,value]=fields,p=Number(phase),v=Number(value);
+  if(fields.length!==4||!phase||!value||!tracks.some(([muscle])=>name===muscle)||!['right','left'].includes(side)||!Number.isFinite(p)||p<0||p>100||!Number.isFinite(v)||v<0||v>1e9)throw Error((i+2)+'번째 줄의 근육 이름, 좌우, 시점과 진폭을 확인하세요.');
+  if(!data.has(name))data.set(name,{right:[],left:[]});
+  data.get(name)[side].push([p,v]);
+ }
+ for(const [cycle,data] of cycles)for(const [name,sides] of data)for(const [side,rows] of Object.entries(sides)){
+  if(!rows.length)continue;
+  rows.sort((a,b)=>a[0]-b[0]);
+  if(rows[0][0]!==0||rows.at(-1)[0]!==100||rows.some((row,i)=>i>0&&row[0]===rows[i-1][0]))throw Error('주기 '+cycle+' · '+name+' '+side+'에 0%, 100%와 중복 없는 시점이 필요합니다.');
+ }
+ return cycles;
+}
+function emgDemoCsv(){
+ const rows=['cycle,phase,muscle,side,value'];
+ const patterns={'앞정강근':[[5,9,39],[76,14,34]],'넙다리네갈래근':[[9,13,60]]};
+ for(const cycle of [1,2,3])for(const [name,peaks] of Object.entries(patterns))for(const side of ['right','left']){
+  for(let p=0;p<=100;p+=2){
+   const t=(p+(side==='left'?50:0)+100+(cycle-2)*3)%100;
+   const value=peaks.reduce((sum,[peak,spread,amplitude])=>{
+    const distance=Math.abs(t-peak);
+    return sum+amplitude*Math.exp(-.5*(Math.min(distance,100-distance)/spread)**2);
+   },4);
+   rows.push([cycle,p,name,side,(value*(.84+.08*cycle)).toFixed(2)].join(','));
+  }
+ }
+ return rows.join('\n');
+}
+let emgCycles=null,emgAggregate=null;
+function averageEmgCycles(cycles){
+ const groups=new Map();
+ for(const records of cycles.values())for(const [name,sides] of records){
+  if(!groups.has(name))groups.set(name,{right:[],left:[]});
+  for(const leg of ['right','left'])if(sides[leg].length)groups.get(name)[leg].push(sides[leg]);
+ }
+ const records=new Map(),bands=new Map();
+ for(const [name,sides] of groups){
+  records.set(name,{right:[],left:[]});bands.set(name,{});
+  for(const [leg,series] of Object.entries(sides)){
+   if(!series.length)continue;
+   bands.get(name)[leg]={count:series.length,points:[]};
+   for(let p=0;p<=100;p++){
+    const values=series.map(samples=>blend(samples,p)[0]);
+    records.get(name)[leg].push([p,values.reduce((a,b)=>a+b,0)/values.length]);
+    bands.get(name)[leg].points.push([p,Math.min(...values),Math.max(...values)]);
+   }
+  }
+ }
+ return {records,bands};
+}
+function setEmgRecords(cycles,synthetic,label){
+ emgCycles=cycles;emgSynthetic=synthetic;
+ emgAggregate=cycles.size>1?averageEmgCycles(cycles):null;
+ const select=$('emgCycle');
+ const choices=[...(emgAggregate?[['','여러 주기 평균']]:[]),...[...cycles.keys()].map(id=>[id,'주기 '+id])];
+ select.replaceChildren(...choices.map(([value,label])=>{
+  const option=document.createElement('option');option.value=value;option.textContent=label;return option;
+ }));
+ select.value=choices[0][0];
+ $('emgCycleLabel').hidden=cycles.size<2;
+ $('emgStatus').textContent=label;
+ selectEmgCycle();
+}
+function selectEmgCycle(){
+ const key=$('emgCycle').value;
+ const records=key?emgCycles.get(key):emgAggregate.records;
+ emgRecords=records;
+ $('emgThresholdEnabled').checked=false;
+ const names=[...records.keys()];
+ for(const [id,index] of [['emgMuscle',0],['emgSecond',1]]){
+  const select=$(id);
+  const prior=select.value;
+  select.replaceChildren(...names.map(name=>{
+   const option=document.createElement('option');option.value=name;option.textContent=name;return option;
+  }));
+  select.value=names.includes(prior)?prior:(names[index]??names[0]);
+ }
+ $('emgMode').querySelector?.('option[value=muscles]')?.toggleAttribute('disabled',names.length<2);
+ if(names.length<2)$('emgMode').value='sides';
+ emgPeakCache=null;emgOverviewKey=null;emgVariationKey=null;
+ draw();
+}
+$('emgCycle').onchange=selectEmgCycle;
+$('emgExample').onclick=()=>{
+ emgRequest++;
+ $('emgFile').value='';
+ $('emgUnit').value='%';
+ setEmgRecords(parseEmg(emgDemoCsv()),true,'모의 자료 · 설명용으로 생성한 정규화 진폭');
+};
+$('emgTemplate').onclick=()=>saveGaitBlob(new Blob([emgDemoCsv()],{type:'text/csv;charset=utf-8'}),'gait-emg-example.csv');
+$('emgFile').onchange=async event=>{
+ const request=++emgRequest,file=event.target.files[0];
+ if(!file)return;
+ try{
+  if(file.size>1500000)throw Error('파일 크기는 1.5 MB 이하여야 합니다.');
+  const records=parseEmg(await file.text());
+  if(request!==emgRequest)return;
+  setEmgRecords(records,false,'가져온 자료 · '+file.name);
+ }catch(error){
+  if(request===emgRequest)$('emgStatus').textContent='파일을 열 수 없습니다 · '+error.message+(emgRecords?' · 이전 자료 표시 중':'');
+ }
+};
+$('emgAnalysis').ontoggle=draw;
+for(const id of ['emgMode','emgMuscle','emgSecond','emgSide'])$(id).onchange=draw;
+$('emgUnit').onchange=()=>{$('emgThresholdEnabled').checked=false;draw();};
+function emgMean(rows,start,end){
+ const samples=[[start,blend(rows,start)[0]],...rows.filter(([p])=>p>start&&p<end),[end,blend(rows,end)[0]]];
+ return samples.slice(1).reduce((area,[p,v],i)=>area+(p-samples[i][0])*(v+samples[i][1])/2,0)/(end-start);
+}
+let emgPeakCache=null;
+function peakSample(rows,from,to){
+ let peak=null;
+ for(const row of rows){
+  if(row[0]<from)continue;
+  if(row[0]>=to&&!(to===100&&row[0]===100))break;
+  if(!peak||row[1]>peak[1])peak=row;
+ }
+ return peak;
+}
+let emgSummary=null;
+function emgAboveIntervals(samples,threshold){
+ if(threshold===null)return [];
+ const intervals=[];
+ for(let i=1;i<samples.length;i++){
+  const [a,u]=samples[i-1],[b,v]=samples[i];
+  const first=u>threshold,last=v>threshold;
+  if(!first&&!last)continue;
+  const cross=first===last?null:a+(b-a)*(threshold-u)/(v-u);
+  const from=first?a:cross,to=last?b:cross;
+  const previous=intervals.at(-1);
+  if(previous&&Math.abs(previous[1]-from)<1e-9)previous[1]=to;
+  else intervals.push([from,to]);
+ }
+ return intervals;
+}
+function emgOverlap(intervals,from,to){
+ return intervals.reduce((span,[a,b])=>span+Math.max(0,Math.min(b,to)-Math.max(a,from)),0);
+}
+function drawEmgPeaks(channels,edges,unit,threshold){
+ const key=JSON.stringify([channels.map(([name])=>name),edges,unit,threshold,$('emgMode').value,$('emgSide').value,$('emgMuscle').value,$('emgSecond').value]);
+ if(key===emgPeakCache)return emgSummary;
+ emgPeakCache=key;
+ const intervals=channels.map(([,samples])=>emgAboveIntervals(samples,threshold));
+ const values=phases.slice(1).map((phase,i)=>{
+  const from=edges[i],to=edges[i+1]??100;
+  return {phase,from,to,channels:channels.map(([name,samples],j)=>{
+   const peak=peakSample(samples,from,to);
+   const avg=samples.length?emgMean(samples,from,to):null;
+   const above=samples.length&&threshold!==null?100*emgOverlap(intervals[j],from,to)/(to-from):null;
+   return {name,peak,avg,above};
+  })};
+ });
+ emgSummary={values,intervals,unit,threshold};
+ const header=document.createElement('tr');
+ for(const name of ['보행 단계',...channels.map(([name])=>name)]){
+  const th=document.createElement('th');th.scope='col';th.textContent=name;header.append(th);
+ }
+ $('emgPeakHead').replaceChildren(header);
+ $('emgPeaks').replaceChildren(...values.map(({phase,channels:metrics})=>{
+  const row=document.createElement('tr'),heading=document.createElement('th');
+  heading.scope='row';heading.textContent=phase;row.append(heading);
+  for(const {peak,avg,above} of metrics){
+   const td=document.createElement('td');
+   if(avg===null)td.textContent='기록 없음';
+   else{
+    const detail=document.createElement('div');
+    detail.textContent='평균 '+Number(avg.toPrecision(3))+' '+unit+(above===null?'':' · 기준 초과 '+above.toFixed(1)+'%');
+    td.append(detail);
+    if(peak){
+     const button=document.createElement('button');button.type='button';
+     button.textContent='최고 '+Number(peak[1].toPrecision(3))+' '+unit+' · '+peak[0].toFixed(1)+'%';
+     button.onclick=()=>scrubPlot(peak[0]);td.append(button);
+    }else{
+     const missing=document.createElement('small');missing.textContent='구간 내 최고 표본 없음';td.append(missing);
+    }
+   }
+   row.append(td);
+  }
+  return row;
+ }));
+ return emgSummary;
+}
+function emgSummaryCsv(summary,source,mode,side,first){
+ const header=['source','cycle','comparison','selected_side','primary_muscle','phase','start_pct','end_pct','channel','unit','mean','peak','peak_phase_pct','threshold','above_threshold_pct'];
+ const rows=summary.values.flatMap(({phase,from,to,channels})=>channels.map(({name,peak,avg,above})=>
+  [source,$('emgCycle').value||'mean',mode,side,first,phase,from,to,name,summary.unit,avg,peak?.[1],peak?.[0],summary.threshold,above]));
+ return [header,...rows].map(row=>row.map(value=>'"'+String(value??'').replaceAll('"','""')+'"').join(',')).join('\r\n');
+}
+$('emgExportSummary').onclick=()=>{
+ if(!emgSummary)return;
+ const mode=$('emgMode').value;
+ const csv=emgSummaryCsv(emgSummary,emgSynthetic?'모의 자료':'가져온 자료',mode,mode==='muscles'?$('emgSide').value:'',$('emgMuscle').value);
+ saveGaitBlob(new Blob(['\uFEFF',csv],{type:'text/csv;charset=utf-8'}),'gait-emg-phase-summary.csv');
+};
+$('emgThresholdEnabled').onchange=draw;$('emgThreshold').oninput=draw;
+let emgOverviewKey=null,emgOverviewPhase=-1,emgOverviewButtons=[];
+$('emgOverview').ontoggle=draw;
+$('emgOverviewSide').onchange=draw;
+function drawEmgOverview(idx,edges,unit){
+ if(!$('emgOverview').open)return;
+ const leg=$('emgOverviewSide').value||'right';
+ const key=JSON.stringify([leg,edges,unit]);
+ if(key!==emgOverviewKey){
+  emgOverviewKey=key;emgOverviewPhase=-1;emgOverviewButtons=[];
+  const channels=[...emgRecords].filter(([,sides])=>sides[leg]?.length);
+  $('emgOverviewEmpty').hidden=channels.length>0;
+  $('emgOverviewTable').hidden=channels.length===0;
+  const header=document.createElement('tr');
+  for(const label of ['근육',...phases.slice(1)]){
+   const th=document.createElement('th');th.scope='col';th.textContent=label;header.append(th);
+  }
+  $('emgOverviewHead').replaceChildren(header);
+  $('emgOverviewRows').replaceChildren(...channels.map(([name,sides])=>{
+   const row=document.createElement('tr'),heading=document.createElement('th');
+   heading.scope='row';heading.textContent=name;row.append(heading);
+   const means=phases.slice(1).map((_,i)=>emgMean(sides[leg],edges[i],edges[i+1]??100));
+   const max=Math.max(...means);
+   means.forEach((mean,i)=>{
+    const cell=document.createElement('td'),button=document.createElement('button');
+    const relative=max>0?100*mean/max:0;
+    button.type='button';button.className='overview-color';
+    button.style.setProperty('--level',relative.toFixed(1)+'%');
+    button.textContent=Number(mean.toPrecision(3))+' '+unit;
+    button.title=name+' · '+phases[i+1]+' · 해당 근육의 단계 최고 평균 대비 '+relative.toFixed(1)+'%';
+    button.setAttribute('aria-label',button.title+' · 평균 '+button.textContent);
+    button.onclick=()=>{
+     $('emgMuscle').value=name;
+     $('emgMode').value='sides';
+     scrubPlot((edges[i]+(edges[i+1]??100))/2);
+     $('emgCanvas').scrollIntoView?.({block:'nearest'});
+    };
+    cell.append(button);row.append(cell);emgOverviewButtons.push({button,phase:i+1});
+   });
+   return row;
+  }));
+ }
+ if(emgOverviewPhase===idx)return;
+ emgOverviewPhase=idx;
+ for(const {button,phase} of emgOverviewButtons){
+  button.classList.toggle('current-emg-phase',phase===idx);
+  button.setAttribute('aria-current',phase===idx?'step':'false');
+ }
+}
+$('emgOverlapPanel').ontoggle=draw;
+let emgOverlapCache=null;
+function intersectEmgIntervals(first,second){
+ const spans=[];
+ let i=0,j=0;
+ while(i<first.length&&j<second.length){
+  const [a,b]=first[i],[c,d]=second[j];
+  const start=Math.max(a,c),end=Math.min(b,d);
+  if(end>start)spans.push([start,end]);
+  if(b<=d)i++;
+  if(d<=b)j++;
+ }
+ return spans;
+}
+function drawEmgOverlap(summary,channels,eligible){
+ const panel=$('emgOverlapPanel');
+ if(!panel.open)return [];
+ const info=$('emgOverlapInfo'),results=$('emgOverlapResults');
+ const message=!eligible?'비교 방식을 ‘같은 다리의 두 근육’으로 바꾸고 서로 다른 근육을 선택하세요.':
+  summary.threshold===null?'‘기준 초과 구간 표시’를 켜고 진폭 기준을 입력하세요.':
+  channels.some(([,samples])=>!samples.length)?'선택한 다리에 두 근육의 기록이 모두 있어야 계산할 수 있습니다.':'';
+ info.textContent=message;info.hidden=!message;
+ results.hidden=!!message;
+ if(message)return [];
+ if(emgOverlapCache?.summary===summary)return emgOverlapCache.spans;
+ const spans=intersectEmgIntervals(...summary.intervals);
+ emgOverlapCache={summary,spans};
+ const percent=emgOverlap(spans,0,100);
+ $('emgOverlapTotal').textContent='주기 전체 · '+channels.map(([name])=>name).join(' + ')+' · 동시 초과 '+percent.toFixed(1)+'%';
+ $('emgOverlapRows').replaceChildren(...summary.values.map(({phase,from,to})=>{
+  const row=document.createElement('tr'),name=document.createElement('th'),ratio=document.createElement('td'),points=document.createElement('td');
+  name.scope='row';name.textContent=phase;
+  ratio.textContent=(100*emgOverlap(spans,from,to)/(to-from)).toFixed(1)+'%';
+  for(const [a,b] of spans){
+   const start=Math.max(a,from),end=Math.min(b,to);
+   if(end<=start)continue;
+   const button=document.createElement('button');button.type='button';
+   button.textContent=start.toFixed(1)+'–'+end.toFixed(1)+'%';
+   button.onclick=()=>scrubPlot((start+end)/2);points.append(button);
+  }
+  if(!points.children.length)points.textContent='겹친 구간 없음';
+  row.append(name,ratio,points);return row;
+ }));
+ return spans;
+}
+let emgVariationKey=null;
+const variationPhaseSelect=$('emgVariationPhase');
+phases.slice(1).forEach((name,i)=>{
+ const option=document.createElement('option');option.value=String(i+1);option.textContent=name;
+ variationPhaseSelect.append(option);
+});
+variationPhaseSelect.value='1';
+variationPhaseSelect.onchange=draw;
+$('emgCycleVariation').ontoggle=draw;
+function sampleStats(values){
+ if(!values.length)return {mean:null,sd:null};
+ const mean=values.reduce((sum,n)=>sum+n,0)/values.length;
+ const sd=values.length>1?Math.sqrt(values.reduce((sum,n)=>sum+(n-mean)**2,0)/(values.length-1)):null;
+ return {mean,sd};
+}
+function drawCycleVariation(edges,unit,dual,first,second,side){
+ const panel=$('emgCycleVariation');panel.hidden=emgCycles.size<2;
+ if(panel.hidden||!panel.open)return;
+ const phase=Number(variationPhaseSelect.value);
+ const from=edges[phase-1],to=edges[phase]??100;
+ const series=dual?[[first,side,first],[second,side,second]]:[[first,'right','오른쪽'],[first,'left','왼쪽']];
+ const key=JSON.stringify([edges,phase,unit,series]);
+ if(key===emgVariationKey)return;
+ emgVariationKey=key;
+ const header=document.createElement('tr');
+ for(const name of ['주기',...series.map(([, ,name])=>name)]){
+  const th=document.createElement('th');th.scope='col';th.textContent=name;header.append(th);
+ }
+ $('emgVariationHead').replaceChildren(header);
+ const columns=series.map(()=>[]);
+ const fmt=value=>Number(value.toPrecision(3))+' '+unit;
+ $('emgVariationRows').replaceChildren(...[...emgCycles].map(([id,records])=>{
+  const row=document.createElement('tr'),label=document.createElement('th');
+  label.scope='row';label.textContent=id;row.append(label);
+  series.forEach(([muscle,leg],i)=>{
+   const cell=document.createElement('td'),samples=records.get(muscle)?.[leg];
+   if(samples?.length){
+    const mean=emgMean(samples,from,to);
+    columns[i].push(mean);
+    const button=document.createElement('button');button.type='button';button.textContent=fmt(mean);
+    button.onclick=()=>{
+     $('emgCycle').value=id;selectEmgCycle();
+     $('emgMuscle').value=muscle;
+     if(dual)$('emgMode').value='sides';
+     scrubPlot((from+to)/2);
+    };
+    cell.append(button);
+   }else cell.textContent='기록 없음';
+   row.append(cell);
+  });
+  return row;
+ }));
+ $('emgVariationSummary').textContent=phases[phase]+' · '+columns.map((values,i)=>{
+  const {mean,sd}=sampleStats(values);
+  return series[i][2]+' '+(mean===null?'기록 없음':'평균 '+fmt(mean)+(sd===null?'':' / 표준편차 '+fmt(sd))+' ('+values.length+'주기)');
+ }).join(' · ');
+}
+function drawEmg(idx){
+ if(!$('emgAnalysis').open)return;
+ $('emgResult').hidden=!emgRecords;
+ if(!emgRecords)return;
+ const canvas=$('emgCanvas'),plot=prepareCanvas(canvas,190);
+ const data=emgRecords.get($('emgMuscle').value);
+ if(!plot||!data)return;
+ const {context:c,width:w,height:h}=plot,unit=emgSynthetic?'%':$('emgUnit').value;
+ const dual=$('emgMode').value==='muscles',side=$('emgSide').value;
+ $('emgSecondLabel').hidden=!dual;$('emgSideLabel').hidden=!dual;
+ const first=$('emgMuscle').value,second=$('emgSecond').value;
+ const channels=dual?[[first,data[side],'#52e5cd'],[second,emgRecords.get(second)?.[side]??[],'#cbb0ff']]:
+  [['오른쪽',data.right,'#52e5cd'],['왼쪽',data.left,'#cbb0ff']];
+ const rows=channels.filter(([,series])=>series.length);
+ const input=$('emgThreshold'),thresholdEnabled=$('emgThresholdEnabled').checked;
+ input.disabled=!thresholdEnabled;
+ $('emgThresholdUnit').textContent=unit;
+ const threshold=thresholdEnabled&&input.value!==''&&Number.isFinite(Number(input.value))&&Number(input.value)>=0&&Number(input.value)<=1e9?Number(input.value):null;
+ $('emgThresholdInfo').textContent=threshold!==null?'곡선 아래 색 띠는 사용자 기준을 넘은 구간입니다. 근육 활동의 임상적 시작·종료 시점을 판정하는 기능과 구분됩니다.':
+  thresholdEnabled?'0 이상의 유효한 진폭을 입력하세요.':'';
+ const summary=drawEmgPeaks(channels,imported?.events||limits,unit,threshold);
+ const {intervals}=summary;
+ const overlaps=drawEmgOverlap(summary,channels,dual&&first!==second);
+ const averaged=$('emgCycle').value===''&&emgAggregate;
+ const bands=averaged?(dual?[[first,side],[second,side]]:[[first,'right'],[first,'left']]).map(([name,leg])=>averaged.bands.get(name)?.[leg]):[];
+ const cycleNote=$('emgCycleNote');
+ cycleNote.hidden=emgCycles.size<2;
+ cycleNote.textContent=averaged?'평균 곡선 · 1% 간격으로 정렬 · 음영은 채널의 최소–최대 범위 · '+channels.map(([name],i)=>name+' '+(bands[i]?.count??0)+'주기').join(' / ')+' · 단계별 값은 평균 곡선에서 계산합니다.':'개별 주기의 기록을 표시합니다.';
+ const max=Math.max(1,threshold??0,...bands.flatMap(b=>b?.points.map(([, ,high])=>high)??[]),...rows.flatMap(([,series])=>series.map(([,y])=>y)));
+ const x=p=>plotX(p,w,angleAxisInsets),y=v=>15+(1-v/max)*(h-40);
+ const edges=imported?.events||limits;
+ drawCycleVariation(edges,unit,dual,first,second,side);
+ drawEmgOverview(idx,edges,unit);
+ const from=idx===0?null:edges[idx-1],to=edges[idx]??100;
+ if(from!==null){
+  c.fillStyle='#233c59';c.fillRect(x(from),15,x(to)-x(from),h-40);
+ }
+ for(const v of [0,max/2,max]){
+  drawLine(c,[[x(0),y(v)],[x(100),y(v)]],'#47617a');
+  c.fillStyle='#bdd4e8';c.fillText(Number(v.toPrecision(3)).toString(),3,y(v)+4,37);
+ }
+ [0,25,50,75,100].forEach(p=>c.fillText(p+'%',x(p)-10,h-6));
+ if(threshold!==null){
+  drawLine(c,[[x(0),y(threshold)],[x(100),y(threshold)]],'#e1c37b',1,[5,4]);
+  intervals.forEach((spans,i)=>{
+   c.fillStyle=channels[i][2];
+   spans.forEach(([a,b])=>c.fillRect(x(a),h-31+i*4,x(b)-x(a),3));
+  });
+ }
+ if(overlaps.length){
+  c.fillStyle='#e5bd65';
+  overlaps.forEach(([a,b])=>c.fillRect(x(a),h-19,x(b)-x(a),3));
+ }
+ bands.forEach((band,i)=>{
+  if(!band||band.count<2)return;
+  const outline=band.points.map(([p,,high])=>[x(p),y(high)]).concat(band.points.slice().reverse().map(([p,low])=>[x(p),y(low)]));
+  c.fillStyle=i?'rgba(203,176,255,.24)':'rgba(82,229,205,.24)';
+  c.beginPath();outline.forEach(([a,b],j)=>j?c.lineTo(a,b):c.moveTo(a,b));c.closePath();c.fill();
+ });
+ rows.forEach(([,series,color])=>drawLine(c,series.map(([p,v])=>[x(p),y(v)]),color,2));
+ drawLine(c,[[x(position),12],[x(position),h-24]],'#f4f8ff',1.5);
+ canvas.setAttribute('aria-valuenow',position.toFixed(1));
+ const display=v=>Number(v.toPrecision(3))+' '+unit;
+ if(!rows.length){
+  $('emgCurrent').textContent='선택한 다리의 기록이 없습니다.';
+  $('emgAverage').textContent='';return;
+ }
+ $('emgCurrent').textContent=position.toFixed(1)+'% 현재 진폭 · '+channels.map(([name,series,color],i)=>(i?'보라 ':'청록 ')+name+' '+(series.length?display(blend(series,position)[0]):'기록 없음')).join(' / ');
+ $('emgAverage').textContent=from===null?'초기접촉은 한 시점입니다. 단계 평균은 구간을 선택하면 표시됩니다.':
+  phases[idx]+' 평균 · '+rows.map(([side,series])=>side+' '+display(emgMean(series,from,to))).join(' / ');
+}
+function drawSelectedMuscle(idx,side){
+ const selection=$('sceneMuscle').value;
+ const output=$('sceneMuscleInfo');
+ output.hidden=!selection;
+ if(!selection)return;
+ if(imported){
+  output.textContent='근육 위치와 단계별 역할은 내장 정상 보행 모형에서 볼 수 있습니다.';
+  return;
+ }
+ const [name,sequence]=tracks[Number(selection)-1];
+ const code=sequence.split(' ')[idx];
+ const detail=muscleRole(name,idx);
+ output.textContent=sideNames[side]+' 기준 · '+name+' · '+phases[idx]+' · '+actions[code][1]
+  +(detail?' · '+detail:'')+' / 정상 보행 교육용 위치 표시. 보라 실선은 표에 표시된 역할 또는 수축 예시, 점선은 위치를 보여줍니다.';
+}
+const angleAxisInsets=[44,16],forceAxisInsets=[40,15],clearanceInsets=[44,23];
+const plotX=(p,width,[left,right])=>left+p*Math.max(1,width-left-right)/100;
+function phaseFromGraph(clientX,{left:edge,width},[left,right]){
+ const fraction=(clientX-edge-left)/Math.max(1,width-left-right);
+ return Math.round(Math.max(0,Math.min(1,fraction))*1000)/10;
+}
+function scrubPlot(phase){
+ setPlaying(false);
+ position=Math.max(0,Math.min(100,Math.round(phase*10)/10));
+ draw();
+}
+function bindGraphScrub(id,insets,start=0,end=100){
+ const canvas=$(id);
+ let pointer=null;
+ const seek=phase=>scrubPlot(Math.min(end,Math.max(start,phase)));
+ const scrub=event=>seek(start+(end-start)*phaseFromGraph(event.clientX,canvas.getBoundingClientRect(),insets)/100);
+ canvas.onpointerdown=event=>{
+  if(event.button!==0||pointer!==null||canvas.getAttribute?.('aria-disabled')==='true')return;
+  pointer=event.pointerId;
+  canvas.setPointerCapture?.(pointer);
+  scrub(event);
+ };
+ canvas.onpointermove=event=>{if(event.pointerId===pointer)scrub(event);};
+ canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=event=>{
+  if(event.pointerId===pointer)pointer=null;
+ };
+ canvas.onkeydown=event=>{
+  const step=event.shiftKey?5:.5;
+  const targets={ArrowLeft:position-step,ArrowRight:position+step,ArrowDown:position-step,ArrowUp:position+step,Home:start,End:end};
+  if(!Object.hasOwn(targets,event.key)||canvas.getAttribute?.('aria-disabled')==='true')return;
+  event.preventDefault();seek(targets[event.key]);
+ };
+}
+function turnCamera(yaw,pitch){
+ yaw=((Math.round(yaw)+180)%360+360)%360-180;
+ pitch=Math.max(0,Math.min(35,Math.round(pitch)));
+ $('cameraYaw').value=String(yaw);$('cameraPitch').value=String(pitch);
+ $('cameraYawValue').textContent=yaw+'°';$('cameraPitchValue').textContent=pitch+'°';
+ $('view').value=[0,45,90,-90].includes(yaw)?String(yaw):'custom';
+ cancelVideo('카메라 시점이 변경되어 영상 저장을 취소했습니다.');
+ draw();
+}
+function bindCameraDrag(id){
+ const canvas=$(id);
+ let anchor=null;
+ canvas.onpointerdown=event=>{
+  if(event.button!==0||anchor)return;
+  anchor={id:event.pointerId,x:event.clientX,y:event.clientY,yaw:+$('cameraYaw').value,pitch:+$('cameraPitch').value};
+  canvas.setPointerCapture?.(anchor.id);
+  canvas.setAttribute('data-dragging','');
+ };
+ canvas.onpointermove=event=>{
+  if(event.pointerId!==anchor?.id)return;
+  turnCamera(anchor.yaw+(event.clientX-anchor.x)*.65,
+   anchor.pitch+(event.pointerType==='touch'?0:(event.clientY-anchor.y)*.24));
+ };
+ canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=event=>{
+  if(event.pointerId!==anchor?.id)return;
+  anchor=null;canvas.removeAttribute('data-dragging');
+ };
+ canvas.onkeydown=event=>{
+  const offsets={ArrowLeft:[-5,0],ArrowRight:[5,0],ArrowUp:[0,3],ArrowDown:[0,-3]};
+  if(!Object.hasOwn(offsets,event.key))return;
+  const [x,y]=offsets[event.key];
+  event.preventDefault();
+  turnCamera(+$('cameraYaw').value+x,+$('cameraPitch').value+y);
+ };
+}
+bindGraphScrub('chart',angleAxisInsets);
+bindGraphScrub('emgCanvas',angleAxisInsets);
+bindGraphScrub('grfCanvas',forceAxisInsets);
+bindGraphScrub('toeClearanceChart',clearanceInsets,60,100);
+bindCameraDrag('normal');bindCameraDrag('abnormal');
+function draw(){
+ const idx=phaseIndex(position,imported?.events||limits);
+ $('modelBlendPanel').hidden=!scenario||!!imported||practiceActive;
+ const showCompensation=!practiceActive&&(scenario===3||scenario===4);
+ $('compensationPanel').hidden=!showCompensation;
+ if(showCompensation){
+  const drop=scenario===4;
+  $('steppageLabel').hidden=!drop;
+  $('hipHikeLabel').hidden=drop;$('circumductionLabel').hidden=drop;
+  $('compensationExplanation').textContent=drop
+   ?'발처짐의 발목 각도를 유지하면서, 엉덩관절과 무릎관절을 더 굽혀 다리를 들어 올리는 모습을 비교합니다.'
+   :'흔듦기 무릎 굽힘 감소를 유지하면서, 골반을 올리는 움직임과 다리를 가쪽으로 휘돌리는 움직임을 따로 관찰합니다.';
+ }
+ $('modelBlendValue').textContent=Math.round(modelBlend()*100)+'%';
+ $('walkwayNote').hidden=!$('sceneWalkway').checked;
+ $('walkwayNote').textContent=imported
+  ?'가져온 기록에는 이동 거리 정보가 없어 이동 바닥은 내장 모형에서만 표시합니다.'
+  :'발자국은 모형의 예시 배치입니다. 진한 자국은 지난 디딤, 어두운 자국은 다음 디딤입니다. 간격과 이동 거리는 실측값이 아닙니다.';
+ for(const id of ['chart','grfCanvas']){
+  $(id).setAttribute('aria-valuenow',position.toFixed(1));
+  $(id).setAttribute('aria-valuetext',position.toFixed(1)+'% · '+phases[idx]);
+ }
+ $('time').value=position;$('pct').value=position.toFixed(1)+'%';
+ phaseButtons.forEach((b,i)=>b.setAttribute('aria-pressed',i===idx));
+ drawMotionDifferences();
+ const overlayNotes=[];
+ if($('sceneOverlay').checked||($('sceneDifferences').checked&&scenario))overlayNotes.push(scenario?'청록 점선 · 현재 시점의 기준 자세':'이상 보행 사례를 선택하면 기준 자세를 겹쳐 볼 수 있습니다.');
+ if(pinnedPose)overlayNotes.push('보라 점선 · '+pinnedPose.phase.toFixed(1)+'%에서 고정한 기준 자세');
+ $('overlayInfo').hidden=overlayNotes.length===0;
+ $('overlayInfo').textContent=overlayNotes.join(' / ');
+ $('poseClear').hidden=!pinnedPose;
+ const forceVisible=$('sceneForce').checked;
+ $('sceneForceAxis').disabled=!forceVisible;
+ $('sceneForceInfo').hidden=!forceVisible;
+ if(forceVisible){
+  const {cop,force,pressure}=sceneKinetics(position,+$('side').value);
+  const source=imported?'가져온 기록':'정상 보행 교육용 모형';
+  const size=force?Math.hypot(...force).toFixed(1):null;
+  const note=!pressure?'압력중심 자료 없음':!cop?'현재 시점에 표시할 압력중심 없음':
+   !force?'청록 점 · 압력중심 / 힘 자료 없음':'청록 점 · 압력중심 / 황색 화살표 · 지면반발력 / 합력 '+size+'% 체중';
+  $('sceneForceInfo').textContent=source+' · '+note+(scenario?' · 점과 화살표는 기준 화면에 표시합니다.':'');
+ }
+ $('trailInfo').hidden=!$('sceneTrail').checked;
+ $('trailInfo').firstElementChild.textContent=contactPairs()[+$('side').value]
+  ?'점선은 기준 다리의 흔듦기 발끝 궤적입니다. 자세 모형에서 계산하며 지면 위 실제 이동 거리로 환산하지 않습니다.'
+  :'기준 다리의 접촉 사건이 없어 궤적을 표시할 수 없습니다.';
+ drawLoopControls();
+ const repeatEnabled=!playOneCycle&&!guidedEnabled()&&($('phaseLoop').checked||$('customLoop').checked);
+ $('loopInfo').hidden=!repeatEnabled;
+ if(repeatEnabled){
+  const range=loopRange??selectedLoopRange();
+  if(range)
+  $('loopInfo').textContent=range[2]+' · '+range[0]+'–'+range[1]+'% 반복';
+ }
+ $('phaseInfo').textContent=descriptions[idx];
+ const chosen=$('sceneMuscle').value;
+ muscleCells.forEach(cell=>{
+  const current=Number(cell.dataset.phase)===idx;
+  cell.classList.toggle('current',current);
+  cell.setAttribute('aria-pressed',String(current&&cell.dataset.muscle===chosen));
+ });
+ const detailPanel=$('muscleDetail');
+ detailPanel.hidden=!chosen;
+ if(chosen){
+  const [name,sequence]=tracks[Number(chosen)-1],code=sequence.split(' ')[idx];
+  $('muscleDetailTitle').textContent=name+' · '+phases[idx];
+  $('muscleDetailAction').textContent=actions[code][1]+' · 정상 보행 교육용 해석';
+  $('muscleDetailRole').textContent=muscleRole(name,idx)||'이 표에서는 이 단계의 대표 작용을 따로 제시하지 않습니다.';
+ }
+ if(shownMuscleRolePhase!==idx){
+  const roles=$('phaseMuscleRoles');
+  const roleTexts=[...phaseMuscleRoles[idx],...trunkMuscleRoles.filter(({roles})=>roles[idx]).map(({name,roles})=>name+' — '+roles[idx])];
+  roles.replaceChildren(...roleTexts.map(text=>{
+   const item=document.createElement('li');
+   item.textContent=text;
+   return item;
+  }));
+  roles.hidden=roleTexts.length===0;
+  shownMuscleRolePhase=idx;
+ }
+ const [name,type,detail,color]=muscleData[idx];
+ $('muscle').innerHTML=name+' · <strong class="'+color+'">'+type+'</strong><br>'+detail;
+ const v=+$('cameraYaw').value,s=+$('side').value;
+ scene($('normal'),position,0,v,s);
+ if(scenario)scene($('abnormal'),position,scenario,v,s);
+ drawFilmstrip(idx);
+ drawMultiView(idx,s);
+ drawFixedWalk(idx,s);
+ drawFootDetail(s);
+ drawToeClearance(s);
+ drawRotationView(s);
+ drawSelectedMuscle(idx,s);
+ drawBilateralMuscles(idx,s);
+ drawMomentLesson(s);
+ drawMuscleTiming(idx);
+ drawEmg(idx);
+ renderMuscleQuiz();
+ const jump=$('muscleCaseJump');
+ const previouslyDisabled=jump.disabled;
+ jump.disabled=!!imported||practiceActive;
+ if(imported)$('muscleCaseStatus').textContent='비교 장면은 내장 모형에서 열 수 있습니다.';
+ else if(practiceActive)$('muscleCaseStatus').textContent='이름을 가린 실습을 종료하면 비교 장면을 열 수 있습니다.';
+ else if(previouslyDisabled)$('muscleCaseStatus').textContent='';
+ drawContacts();
+ drawEventGuide();
+ const pairs=contactPairs();
+ const supporting=pairs.flatMap((pair,i)=>inContact(pair,position)?[sideNames[i]]:[]);
+ $('supportText').textContent=pairs.every(Boolean)
+  ?(supporting.length===2?'양발 지지':supporting.length===1?supporting[0]+' 한 발 지지':'두 발 모두 비접촉')
+  :'완전한 좌우 접촉 사건이 없어 지지 상태를 표시할 수 없습니다.';
+ graph();
+ drawKinetics();
+}
+let loopRange=null,customStart=null,customEnd=null;
+function customRangeValid(){
+ return customStart!==null&&customEnd!==null&&customEnd-customStart>=.49;
+}
+function selectedLoopRange(){
+ if($('customLoop').checked&&customRangeValid())return [customStart,customEnd,'지정 구간'];
+ return $('phaseLoop').checked?phaseRange(position):null;
+}
+function drawLoopControls(){
+ const custom=$('customLoop');
+ custom.disabled=!customRangeValid();
+ if(custom.disabled)custom.checked=false;
+ $('clearLoop').disabled=customStart===null&&customEnd===null;
+ $('loopMarkers').textContent='시작 '+(customStart===null?'미지정':customStart.toFixed(1)+'%')
+  +' · 끝 '+(customEnd===null?'미지정':customEnd.toFixed(1)+'%')
+  +(customStart!==null&&customEnd!==null&&!customRangeValid()?' · 끝은 시작보다 0.5%p 이상 뒤에 지정하세요.':'');
+ $('ghostSpacing').disabled=!$('sceneGhosts').checked;
+ $('ghostInfo').hidden=!$('sceneGhosts').checked;
+}
+function phaseRange(p){
+ const edges=imported?.events||limits;
+ const idx=phaseIndex(p,edges);
+ if(idx===0)return p===100?[edges.at(-1),100,phases.at(-1)]:[0,edges[1],phases[1]];
+ return [edges[idx-1],edges[idx]??100,phases[idx]];
+}
+let playOneCycle=false,guidedStop=null;
+function guideStops(){
+ const stops=new Map();
+ contactPairs().forEach((pair,side)=>pair?.forEach((point,index)=>{
+  if(!stops.has(point))stops.set(point,[]);
+  stops.get(point).push({side,index});
+ }));
+ return [...stops].sort(([a],[b])=>a-b);
+}
+function guidedEnabled(){
+ return $('guideEvents').checked&&contactPairs().some(Boolean);
+}
+function nextGuideStop(p){
+ return guideStops().find(([point])=>point>p+1e-7)?.[0]??100;
+}
+function drawEventGuide(){
+ const checkbox=$('guideEvents'),available=contactPairs().some(Boolean);
+ checkbox.disabled=!available;
+ const restart=$('guideRestart'),status=$('guideStatus');
+ const active=guidedEnabled();
+ restart.hidden=!active;
+ status.hidden=!active;
+ if(!active)return;
+ const exact=guideStops().find(([point])=>Math.abs(point-position)<1e-7);
+ let message;
+ if(playing&&guidedStop!==null)message='다음 관찰 지점 '+guidedStop.toFixed(1)+'%까지 재생 중입니다.';
+ else if(position===100)message='한 주기 관찰을 마쳤습니다. 처음부터 보려면 ‘처음부터 관찰’을 누르세요.';
+ else if(exact)message=exact[0].toFixed(1)+'% · '+exact[1].map(({side,index})=>
+  sideNames[side]+' '+(index?'발가락떼기 · 발의 지지가 끝나는 순간':'초기접촉 · 발이 바닥에 닿는 순간')
+ ).join(' / ')+' · 재생을 누르면 다음 사건으로 이어집니다.';
+ else message='재생을 누르면 다음 보행 사건에서 멈춥니다.';
+ if(status.textContent!==message)status.textContent=message;
+}
+$('guideEvents').onchange=()=>{
+ setPlaying(false);draw();
+};
+$('guideRestart').onclick=()=>{
+ setPlaying(false);position=0;draw();
+};
+function setPlaying(active){
+ if(active===playing)return;
+ if(!active)playOneCycle=false;
+ if(active&&!playOneCycle&&guidedEnabled()&&position===100)position=0;
+ guidedStop=active&&!playOneCycle&&guidedEnabled()?nextGuideStop(position):null;
+ loopRange=active&&!playOneCycle&&guidedStop===null?selectedLoopRange():null;
+ playing=active;previous=null;$('play').textContent=active?'일시정지':'재생';
+ if(active)frameId=requestAnimationFrame(frame);else cancelAnimationFrame(frameId);
+ draw();
+}
+let frameId=0;
+function frame(now){
+ if(!playing)return;
+ if(previous!==null){
+  const durationMs=1000*Number($('cycleDuration').value||1.8);
+  const step=Math.max(0,now-previous)*Number($('speed').value)*100/durationMs;
+  if(playOneCycle){
+   position=Math.min(100,position+step);
+   if(position===100){setPlaying(false);return;}
+  }else if(guidedStop!==null){
+   position=Math.min(guidedStop,position+step);
+   if(position===guidedStop){setPlaying(false);return;}
+  }else if(loopRange){
+   const [start,end]=loopRange;
+   if(position<start||position>=end)position=start;
+   position=start+(position-start+step)%(end-start);
+  }else position=(position+step)%100;
+ }
+ previous=now;draw();frameId=requestAnimationFrame(frame);
+}
+document.addEventListener?.('visibilitychange',()=>{
+ previous=null;
+ if(document.hidden)cancelVideo('탭이 가려져 영상 저장을 취소했습니다.');
+});
+document.addEventListener?.('input',event=>{
+ if(event.target.id!=='time')cancelVideo('설정이 변경되어 영상 저장을 취소했습니다.');
+});
+document.addEventListener?.('click',event=>{
+ const button=event.target.closest?.('button');
+ if(button&&!['saveGaitVideo','cancelGaitVideo','play','frameBack','frameForward'].includes(button.id))
+  cancelVideo('화면을 조작하여 영상 저장을 취소했습니다.');
+},true);
+$('cycleDuration').onchange=()=>{previous=null;};
+$('speed').onchange=()=>{previous=null;};
+$('motionInterpolation').onchange=()=>{pinnedPose=null;draw();};
+$('playFixedWalk').onclick=()=>{
+ if(imported)return;
+ setPlaying(false);position=0;playOneCycle=true;setPlaying(true);
+};
+$('play').onclick=()=>{cancelAnimationFrame(frameId);setPlaying(!playing);};
+$('time').oninput=()=>{setPlaying(false);position=+$('time').value;draw();};
+$('joint').onchange=draw;
+$('side').onchange=()=>{if(guidedStop!==null)setPlaying(false);pinnedPose=null;draw();};
+$('posePin').onclick=()=>{
+ setPlaying(false);
+ pinnedPose={phase:position,pose:motionPose(position,0,+$('side').value)};
+ draw();
+};
+$('poseClear').onclick=()=>{pinnedPose=null;draw();};
+function syncPresetCamera(){
+ $('cameraYaw').value=$('view').value;
+ $('cameraYawValue').textContent=$('cameraYaw').value+'°';
+}
+$('view').onchange=()=>{syncPresetCamera();draw();};
+['cameraYaw','cameraPitch'].forEach(id=>$(id).oninput=()=>{
+ $(id+'Value').textContent=$(id).value+'°';
+ if(id==='cameraYaw'){
+  const yaw=$('cameraYaw').value;
+  $('view').value=['0','45','90','-90'].includes(yaw)?yaw:'custom';
+ }
+ draw();
+});
+function changeCase(){
+ scenario=+$('case').value;$('comparison').hidden=!scenario;$('scenes').classList.toggle('one',!scenario);
+ $('ataxicCycle').hidden=scenario!==5;
+ const source=$('caseSource');
+ source.hidden=!caseData[scenario]?.[2];
+ if(scenario){
+  const [title,description,reference]=caseData[scenario];
+  $('caseTitle').textContent=title+' · 교육용 모델';
+  $('caseText').textContent=description;
+  if(reference)source.href=reference;
+ }
+ updateCaseVisibility();
+ draw();
+}
+$('case').onchange=changeCase;
+$('modelBlend').oninput=draw;
+for(const id of ['compSteppage','compHipHike','compCircumduction'])$(id).onchange=draw;
+$('compScene').onclick=()=>{
+ if(scenario!==3&&scenario!==4)return;
+ setPlaying(false);position=75;
+ $('view').value=scenario===3?'45':'0';
+ $('joint').value=scenario===3?'1':'2';
+ $('showToeClearance').checked=!imported;
+ syncPresetCamera();draw();
+};
+$('ataxicCycle').onclick=()=>{
+ ataxicCycle=1-ataxicCycle;
+ $('ataxicCycle').textContent='예시 주기 '+(ataxicCycle?'B':'A')+' · 다른 주기 보기';
+ draw();
+};
+window.addEventListener('resize',draw);
+['sceneZoom','sceneGuides','sceneTrail','sceneOverlay','sceneAngles','showFilmstrip','sceneForce','sceneForceAxis','sceneDifferences','showMultiView','showFootDetail','sceneMuscle','sceneGhosts','ghostSpacing','sceneStyle','sceneWalkway','showFixedWalk','showToeClearance','showRotation'].forEach(id=>$(id).onchange=draw);
+$('phaseLoop').onchange=()=>{
+ if($('phaseLoop').checked)$('customLoop').checked=false;
+ loopRange=playing&&!playOneCycle&&guidedStop===null?selectedLoopRange():null;
+ draw();
+};
+$('customLoop').onchange=()=>{
+ if($('customLoop').checked&&customRangeValid())$('phaseLoop').checked=false;
+ loopRange=playing?selectedLoopRange():null;
+ draw();
+};
+$('markLoopStart').onclick=()=>{setPlaying(false);customStart=Math.round(position*10)/10;draw();};
+$('markLoopEnd').onclick=()=>{setPlaying(false);customEnd=Math.round(position*10)/10;draw();};
+$('clearLoop').onclick=()=>{
+ customStart=null;customEnd=null;$('customLoop').checked=false;
+ loopRange=playing?selectedLoopRange():null;draw();
+};
+function moveFrame(delta){
+ setPlaying(false);position=Math.max(0,Math.min(100,Math.round((position+delta)*10)/10));draw();
+}
+$('frameBack').onclick=()=>moveFrame(-.5);
+$('frameForward').onclick=()=>moveFrame(.5);
+let importRequest=0;
+function validate(data){
+ if(typeof data?.name!=='string'||!data.name.trim()||!Array.isArray(data.samples)||data.samples.length<2||data.samples.length>10000)throw Error('name과 2~10,000개의 samples를 확인하세요.');
+ const rows=[[],[]];let previous=-1;
+ for(const sample of data.samples){
+  if(!Number.isFinite(sample.phase)||sample.phase<=previous||sample.phase<0||sample.phase>100)throw Error('phase는 0~100 범위의 오름차순이어야 합니다.');
+  previous=sample.phase;
+  [sample.right,sample.left].forEach((values,i)=>{
+   if(!Array.isArray(values)||values.length!==3||values.some(a=>!Number.isFinite(a)||Math.abs(a)>180))throw Error('좌우 각도는 각각 -180~180°의 숫자 3개여야 합니다.');
+   rows[i].push([sample.phase,...values]);
+  });
+ }
+ if(rows[0][0][0]!==0||previous!==100)throw Error('0%와 100% 표본이 필요합니다.');
+ const events=data.events??limits;
+ if(!Array.isArray(events)||events.length!==7||events[0]!==0||events.some((a,i)=>!Number.isFinite(a)||a>=100||(i>0&&a<=events[i-1])))throw Error('events는 0으로 시작하는 7개 단계 경계여야 합니다.');
+ const names=['right','left'];
+ const contacts=names.map(name=>{
+  const pair=data.contacts?.[name];
+  if(pair===undefined)return null;
+  if(!Array.isArray(pair)||pair.length!==2||pair.some(p=>!Number.isFinite(p)||p<0||p>=100)||pair[0]===pair[1])throw Error('contacts.'+name+'에는 서로 다른 0 이상 100 미만의 시점 두 개가 필요합니다.');
+  return pair;
+ });
+ function channel(values,width,kind){
+  if(values===undefined)return null;
+  if(!Array.isArray(values)||values.length<2||values.length>10000)throw Error(kind+'는 2~10,000행이 필요합니다.');
+  let last=-1;
+  for(const row of values){
+   if(!Array.isArray(row)||row.length!==width||!row.every(Number.isFinite)||row[0]<=last||row[0]<0||row[0]>100||(kind==='cop'&&(row[1]<0||row[1]>100||Math.abs(row[2])>100))||(kind==='grf'&&(row[1]<0||row.slice(1).some(v=>Math.abs(v)>10000))))throw Error(kind+'의 시간, 성분 또는 단위 범위를 확인하세요.');
+   last=row[0];
+  }
+  if(kind==='grf'&&(values[0][0]!==0||last!==100))throw Error('grf는 0%와 100% 행을 포함해야 합니다.');
+  return values;
+ }
+ const kinetics=names.map(name=>({
+  cop:channel(data.kinetics?.[name]?.cop,3,'cop'),grf:channel(data.kinetics?.[name]?.grf,4,'grf')
+ }));
+ return {name:data.name.slice(0,80),rows,events,contacts,kinetics,source:typeof data.source==='string'?data.source.slice(0,120):''};
+}
+$('file').onchange=async event=>{
+ const ticket=++importRequest,file=event.target.files[0];if(!file)return;
+ try{
+  if(file.size>2000000)throw Error('2MB 이하의 JSON 파일을 선택하세요.');
+  const data=validate(JSON.parse(await file.text()));
+  if(ticket!==importRequest)return;
+  filmKey='';pinnedPose=null;imported=data;setPlaying(false);position=0;
+  $('baseTitle').textContent=data.name+' · 가져온 기록';$('status').textContent='기록을 불러왔습니다. 단계 경계는 파일 또는 교육용 기본값을 사용합니다.';draw();
+ }catch(error){if(ticket===importRequest)$('status').textContent='가져오기 실패 · '+error.message;}
+};
+$('reset').onclick=()=>{importRequest++;filmKey='';pinnedPose=null;imported=null;$('file').value='';$('baseTitle').textContent='정상 보행 · 교육용 모델';$('status').textContent='내장 교육용 모델을 사용 중입니다.';draw();};
+$('sample').onclick=()=>{
+ const data={name:'양측 교육용 예시',source:'교육용 모형값',events:limits,contacts:{right:[0,60],left:[50,10]},kinetics:{right:{cop:pressurePath,grf:forces}},samples:Array.from({length:101},(_,p)=>({phase:p,right:modelSample(keys,p),left:modelSample(keys,(p+50)%100)}))};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+ const a=document.createElement('a');a.href=url;a.download='gait-sample.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+const practiceCases=[
+ {model:1,p:23,view:90,answers:[['반대쪽 골반 하강','발끝 끌림','팔 흔들림 감소'],['지지 쪽 골반 안정화 저하','발등굽힘 저하','주된 문제는 팔 흔들림 감소'],['엉덩관절 벌림근 근력과 한 다리 지지','손목 가동범위','발가락 감각만']],correct:[0,0,0],explain:'정상 모델과 비교해 반대쪽 골반 하강과 지지 쪽 몸통 기울기를 따로 기록합니다. 엉덩관절 벌림근 근력과 한 다리 지지에서의 골반 조절을 확인합니다.'},
+ {model:4,p:76,view:0,answers:[['팔 흔들림 감소','흔듦기 발끝이 낮아짐','지지 반대쪽 골반 하강'],['발등굽힘 조절 저하','지지 쪽 엉덩관절 벌림 조절 저하','몸통 가쪽 조절 저하'],['엉덩관절 폄만','발등굽힘 근력과 감각','어깨관절 가동범위']],correct:[1,0,1],explain:'같은 시점의 정상 모델과 비교해 발등굽힘과 발끝 높이를 확인합니다. 발등굽힘 근력과 감각 평가를 통해 가능한 원인을 좁힙니다.'},
+ {model:5,p:34,view:90,answers:[['짧고 일정한 걸음','팔 흔들림 감소','넓은 걸음 너비와 몸통 흔들림'],['가쪽 균형과 발 디딤 위치의 조절 어려움','팔꿈치 폄 제한','발목관절만의 문제'],['손목 가동범위만','발가락 관절만','여러 보행 주기의 걸음 너비와 몸통 흔들림 관찰']],correct:[2,0,2],explain:'정상 모델과 비교해 걸음 너비와 몸통 흔들림을 따로 기록합니다. 주기 A·B로 보이는 변동과 실제 여러 걸음에서 반복 관찰할 항목을 연결합니다.'},
+ {model:6,p:25,view:0,answers:[['몸통 앞굽음과 팔 흔들림 감소','넓은 걸음 너비','반대쪽 골반만 하강'],['젖혀 걷는 보상','걸음과 팔 움직임의 크기 감소','발목관절의 단독 제한'],['손가락 관절만','걸음 길이와 팔 흔들림의 크기 및 좌우 차이','발가락 감각만']],correct:[0,1,1],explain:'정상보다 짧은 걸음과 팔 흔들림 감소를 기록합니다. 여러 걸음에서 걸음 길이, 팔 움직임의 크기와 좌우 차이를 확인합니다.'}
+];
+let practiceIndex=-1,practiceActive=false,practiceRevealed=false;
+function updateCaseVisibility(){
+ $('case').closest('label').hidden=practiceActive&&!practiceRevealed;
+ $('case').disabled=practiceActive&&!practiceRevealed;
+ $('practiceExit').hidden=!practiceActive;
+ if(practiceActive&&!practiceRevealed){
+  $('caseTitle').textContent='이름을 가린 비교 사례';
+  $('caseText').textContent='정상 보행과 비교해 보이는 움직임을 먼저 기록하세요.';
+  $('caseSource').hidden=true;
+ }
+}
+$('practiceStart').onclick=()=>{
+ if(imported)$('reset').click();
+ practiceIndex=(practiceIndex+1)%practiceCases.length;
+ practiceActive=true;practiceRevealed=false;
+ const item=practiceCases[practiceIndex];
+ setPlaying(false);position=item.p;$('view').value=item.view;syncPresetCamera();$('case').value=item.model;
+ changeCase();$('comparison').scrollIntoView({block:'nearest'});
+ $('practicePrompt').textContent='비교 모형을 관찰한 뒤 세 항목을 답하세요.';
+ $('practiceFeedback').textContent='';
+ const fields=$('practiceFields');
+ fields.replaceChildren(...item.answers.map((options,i)=>{
+  const label=document.createElement('label'),select=document.createElement('select');
+  label.textContent=['관찰 소견','가능한 해석','추가 평가'][i];select.required=true;
+  const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='선택하세요';select.append(placeholder);
+  options.forEach((text,n)=>{const option=document.createElement('option');option.value=n;option.textContent=text;select.append(option);});
+  label.append(select);return label;
+ }));
+ $('practiceForm').querySelector('button').disabled=false;
+ $('practiceForm').hidden=false;
+};
+$('practiceForm').onsubmit=event=>{
+ event.preventDefault();
+ if(!practiceActive||practiceRevealed)return;
+ const item=practiceCases[practiceIndex];
+ const choices=[...$('practiceFields').querySelectorAll('select')];
+ if(choices.some(select=>select.value===''))return;
+ const labels=['관찰 소견','가능한 해석','추가 평가'];
+ const results=choices.map((select,i)=>labels[i]+' '+(+select.value===item.correct[i]?'정답':'다시 볼 항목')+' · '+item.answers[i][item.correct[i]]);
+ practiceRevealed=true;changeCase();
+ $('practiceFeedback').textContent=results.join(' / ')+' · '+item.explain;
+ $('practiceForm').querySelector('button').disabled=true;
+};
+function exitPractice(){
+ practiceActive=false;practiceRevealed=false;
+ $('practiceForm').hidden=true;
+ $('practicePrompt').textContent='';$('practiceFeedback').textContent='';
+ updateCaseVisibility();
+}
+$('practiceExit').onclick=()=>{exitPractice();changeCase();};
+const quiz=[
+ [6,0,'초기접촉 직후 발 앞부분이 내려가는 속도를 조절하는 작용은?',['앞정강근의 편심성 작용','앞정강근의 동심성 작용','발바닥굽힘근의 추진 작용'],0,'앞정강근은 발바닥굽힘이 진행되는 동안 속도를 조절합니다.',['','동심성 발등굽힘은 발 앞부분을 들어 올리는 방향입니다.','추진은 보행 주기의 더 뒤쪽에서 관찰합니다.']],
+ [3,0,'부하반응기에 발 앞부분이 빠르게 떨어질 때 먼저 관찰할 항목은?',['말기흔듦기의 골반 돌림','발바닥굽힘 속도와 앞정강근 조절','반대편의 발꿈치 들림'],1,'같은 단계에서 발이 내려오는 속도와 이를 조절하는 근육을 연결합니다.',['관찰 시점은 초기접촉 직후입니다.','','반대발의 사건은 기준 발의 내려오는 속도를 직접 설명하지 않습니다.']],
+ [21,1,'지지 다리 반대쪽 골반이 내려갑니다. 추가 평가로 적절한 것은?',['발등굽힘근만 검사','팔꿈치 굽힘 검사','지지 쪽 엉덩관절 벌림근 근력과 한 다리 지지 평가'],2,'지지 쪽 엉덩관절과 몸통이 골반을 어떻게 조절하는지 확인합니다.',['발등굽힘근은 이 골반 소견의 우선 평가 항목이 아닙니다.','팔꿈치 굽힘은 골반 조절을 직접 평가하지 않습니다.','']],
+ [26,1,'같은 사례에서 몸통이 지지 쪽으로 기울면 무엇을 별도로 기록합니까?',['몸통 기울기와 골반 기울기','발목 각도만','보행 주기 길이만'],0,'몸통 기울기와 골반 하강은 동시에 나타날 수 있는 별개의 관찰 소견입니다.',['','발목 각도만으로 두 소견을 구분할 수 없습니다.','시간 정보만으로 몸통과 골반의 방향을 알 수 없습니다.']],
+ [75,4,'흔듦기에 발끝이 내려가는 사례에서 먼저 비교할 관절 움직임은?',['손목 폄','발목관절 발등굽힘','어깨관절 벌림'],1,'흔듦기의 발등굽힘을 정상 모델과 비교합니다.',['손목은 발끝 높이를 직접 결정하지 않습니다.','','어깨 움직임은 발끝 저하를 직접 설명하지 않습니다.']],
+ [73,4,'발끝 간격을 확보하기 위한 보상 움직임으로 관찰할 항목은?',['손가락 굽힘','목 폄','엉덩관절과 무릎관절 굽힘 증가'],2,'엉덩관절과 무릎관절 굽힘은 흔듦기의 발끝 높이를 확보하는 데 기여할 수 있습니다.',['손가락 자세는 다리의 발끝 간격을 확보하지 않습니다.','목 폄은 발끝을 들어 올리는 직접적인 다리 보상이 아닙니다.','']]
+];
+let q=0, target=0, answered=false, record={total:0,correct:0};
+try{const saved=JSON.parse(localStorage.getItem('gait-learning-v1'));if(Number.isInteger(saved?.total)&&Number.isInteger(saved?.correct)&&saved.correct>=0&&saved.correct<=saved.total)record=saved;}catch{}
+function stats(){ $('record').textContent='이 브라우저 학습 기록 · '+record.correct+'문항 정답 / '+record.total+'문항 응답';}
+function renderQuiz(){
+ answered=false;$('feedback').textContent='';$('next').hidden=true;
+ const [, ,question,choices,right,explain,errors]=quiz[q];
+ $('question').textContent=question;$('answers').replaceChildren();
+ choices.forEach((choice,i)=>{
+  const b=document.createElement('button');b.textContent=choice;b.onclick=()=>{
+   if(answered)return;
+   answered=true;record.total++;const correct=i===right;if(correct)record.correct++;
+   try{localStorage.setItem('gait-learning-v1',JSON.stringify(record));}catch{}
+   stats();b.setAttribute('aria-pressed','true');
+   $('feedback').textContent=correct?'정답입니다. '+explain:'선택한 답의 해설 · '+errors[i]+'\n정답 · '+choices[right]+'\n'+explain;
+   target=(!correct&&q%2===0)?q+1:(Math.floor(q/2)*2+2)%quiz.length;
+   $('next').textContent=(!correct&&q%2===0)?'같은 개념의 변형 문항':'다음 문항';$('next').hidden=false;
+  };$('answers').append(b);
+ });
+}
+$('next').onclick=()=>{q=target;renderQuiz();$('answers').firstElementChild.focus();};
+$('observe').onclick=()=>{if(practiceActive)exitPractice();setPlaying(false);if(imported)$('reset').click();position=quiz[q][0];$('case').value=quiz[q][1];changeCase();$('time').focus();};
+stats();renderQuiz();draw();
+</script>
+</html>
